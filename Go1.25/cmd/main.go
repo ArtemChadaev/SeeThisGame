@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/ArtemChadaev/go"
-	"github.com/ArtemChadaev/go/pkg/handler"
-	"github.com/ArtemChadaev/go/pkg/repository"
-	"github.com/ArtemChadaev/go/pkg/service"
+	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/pkg/handler"
+	"github.com/ArtemChadaev/SeeThisGame/pkg/repository"
+	"github.com/ArtemChadaev/SeeThisGame/pkg/service"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"

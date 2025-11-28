@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ArtemChadaev/go"
+	"github.com/ArtemChadaev/SeeThisGame"
 	"github.com/gin-gonic/gin"
 )
 

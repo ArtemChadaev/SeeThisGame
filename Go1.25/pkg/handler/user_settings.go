@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/ArtemChadaev/go"
+	"github.com/ArtemChadaev/SeeThisGame"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

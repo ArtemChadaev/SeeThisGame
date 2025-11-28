@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ArtemChadaev/go"
+	"github.com/ArtemChadaev/SeeThisGame"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )

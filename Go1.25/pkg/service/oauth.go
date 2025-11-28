@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ArtemChadaev/go"
-	"github.com/ArtemChadaev/go/pkg/repository"
+	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/pkg/repository"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"

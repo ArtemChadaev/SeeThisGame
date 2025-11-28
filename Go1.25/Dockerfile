@@ -1,7 +1,7 @@
 # Dockerfile
 
 # --- ЭТАП 1: "Сборщик" ---
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25.4-alpine AS builder
 
 # Устанавливаем рабочую директорию
 WORKDIR /app

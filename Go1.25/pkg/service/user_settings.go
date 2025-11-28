@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ArtemChadaev/go"
-	"github.com/ArtemChadaev/go/pkg/repository"
+	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/pkg/repository"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 )
