@@ -1,0 +1,31 @@
+# .github/workflows/ci-dev.yml
+name: CI for dev branch
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Используем oven-sh/setup-bun для установки Bun
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest # Или укажите конкретную версию Bun
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile # Используем флаг для установки из lock-файла
+
+      - name: Lint code
+        run: bun run lint # Запускаем команду линтинга из package.json
+
+      - name: Build project
+        run: bun run build # Запускаем команду сборки из package.json

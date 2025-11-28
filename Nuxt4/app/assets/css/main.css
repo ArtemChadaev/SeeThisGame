@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+/* BodySection */
+
+.blockBody {
+  @apply rounded-xl border min-h-30 hover:scale-105 transition-all transform  hover:shadow-2xl;
+}
