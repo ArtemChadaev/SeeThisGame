@@ -105,12 +105,20 @@ func (s *AuthService) GenerateTokens(email, password string) (tokens rest.Respon
 		return tokens, rest.NewInternalServerError(err)
 	}
 
+	return s.createTokens(userId)
+}
+
+func (s *AuthService) GenerateTokensForUser(userId int) (tokens rest.ResponseTokens, err error) {
+	return s.createTokens(userId)
+}
+
+func (s *AuthService) createTokens(userId int) (tokens rest.ResponseTokens, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.RegisteredClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		userId,
+		UserId: userId,
 	})
 
 	accessToken, err := token.SignedString([]byte(signingKey))
@@ -133,6 +141,7 @@ func (s *AuthService) GenerateTokens(email, password string) (tokens rest.Respon
 	}
 	return
 }
+
 
 func (s *AuthService) GetAccessToken(refreshToken string) (tokens rest.ResponseTokens, err error) {
 

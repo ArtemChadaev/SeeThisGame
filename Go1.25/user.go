@@ -7,9 +7,11 @@ type ResponseTokens struct {
 	RefreshToken string `json:"refreshToken"`
 }
 type User struct {
-	ID       int    `json:"-" db:"id"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	ID            int     `json:"-" db:"id"`
+	Email         string  `json:"email" binding:"required"`
+	Password      string  `json:"password" binding:"required"`
+	OAuthProvider *string `json:"oauth_provider,omitempty" db:"oauth_provider"`
+	OAuthID       *string `json:"oauth_id,omitempty" db:"oauth_id"`
 }
 
 type RefreshToken struct {

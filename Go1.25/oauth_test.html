@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .btn {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 10px auto;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .google {
+            background-color: #db4437;
+        }
+        .github {
+            background-color: #333;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OAuth Login Test</h1>
+        <p>Ensure backend is running on localhost:8080</p>
+        
+        <a href="http://localhost:8080/auth/oauth/google" class="btn google">Sign in with Google</a>
+        <a href="http://localhost:8080/auth/oauth/github" class="btn github">Sign in with GitHub</a>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Check for tokens in URL (if we were redirecting back to frontend with tokens)
+        // But current implementation returns JSON, so browser will just show JSON.
+        // This page is just to initiate the flow.
+    </script>
+</body>
+</html>

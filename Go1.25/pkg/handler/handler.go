@@ -28,6 +28,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign-in", h.signIn)
 		auth.POST("/refresh", h.updateToken)
 
+		// OAuth routes
+		oauth := auth.Group("/oauth")
+		{
+			oauth.GET("/:provider", h.initiateOAuth)
+			oauth.GET("/:provider/callback", h.oauthCallback)
+		}
 	}
 
 	api := router.Group("/api", h.userIdentify, h.rateLimiter)

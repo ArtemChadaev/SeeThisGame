@@ -10,3 +10,16 @@ db:
 redis:
   addr: "localhost:5433"
   db: 0
+
+oauth:
+  baseURL: "http://localhost:8080"
+  google:
+    redirectURL: "http://localhost:8080/auth/oauth/google/callback"
+    scopes:
+      - "https://www.googleapis.com/auth/userinfo.email"
+      - "https://www.googleapis.com/auth/userinfo.profile"
+  github:
+    redirectURL: "http://localhost:8080/auth/oauth/github/callback"
+    scopes:
+      - "user:email"
+      - "read:user"

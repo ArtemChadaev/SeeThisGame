@@ -94,3 +94,31 @@ func (r *AuthRepository) GetRefreshTokens(userId int) ([]rest.RefreshToken, erro
 	err := r.db.Select(&refresh, query, userId)
 	return refresh, err
 }
+
+// CreateOAuthUser creates a new user with OAuth credentials
+func (r *AuthRepository) CreateOAuthUser(user rest.User) (int, error) {
+	var id int
+	query := `INSERT INTO users (email, password_hash, oauth_provider, oauth_id) 
+	          VALUES ($1, $2, $3, $4) RETURNING id`
+	row := r.db.QueryRow(query, user.Email, user.Password, user.OAuthProvider, user.OAuthID)
+	if err := row.Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+// GetUserByOAuth finds a user by OAuth provider and OAuth ID
+func (r *AuthRepository) GetUserByOAuth(provider, oauthID string) (rest.User, error) {
+	var user rest.User
+	query := "SELECT id, email, oauth_provider, oauth_id FROM users WHERE oauth_provider=$1 AND oauth_id=$2"
+	err := r.db.Get(&user, query, provider, oauthID)
+	return user, err
+}
+
+// GetUserByEmail finds a user by email address
+func (r *AuthRepository) GetUserByEmail(email string) (rest.User, error) {
+	var user rest.User
+	query := "SELECT id, email, oauth_provider, oauth_id FROM users WHERE email=$1"
+	err := r.db.Get(&user, query, email)
+	return user, err
+}
