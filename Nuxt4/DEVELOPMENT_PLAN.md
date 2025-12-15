@@ -1,527 +1,598 @@
-# План разработки игры "Выбери меня" - Frontend
+# "Choose Me" Game Development Plan - Frontend
 
-## Обзор проекта
+## Project Overview
 
-Разработка frontend-части игры "Выбери меня" на базе Nuxt 4 с использованием современного стека технологий Vue.js экосистемы.
+Development of the frontend part of the "Choose Me" game based on Nuxt 4 using the modern Vue.js ecosystem tech stack.
 
-## Архитектура приложения
+## Application Architecture
 
-### Технологический стек
+### Tech Stack
 
 #### Core Technologies
-- **Nuxt 4** (v4.1.2) - Meta-framework для Vue.js
-- **Vue 3** (v3.5.18) - Composition API, Reactivity System
-- **TypeScript** (v5.6.3) - Строгая типизация
-- **Vite** - Быстрая сборка и HMR
+
+  - **Nuxt 4** (v4.1.2) - Meta-framework for Vue.js
+  - **Vue 3** (v3.5.18) - Composition API, Reactivity System
+  - **TypeScript** (v5.6.3) - Strict typing
+  - **Vite** - Fast build and HMR
 
 #### State Management
-- **Pinia** (v3.0.3) - Официальный state manager
-- **pinia-plugin-persistedstate** - Сохранение состояния в localStorage
+
+  - **Pinia** (v3.0.3) - Official state manager
+  - **pinia-plugin-persistedstate** - State persistence in localStorage
 
 #### UI/UX
-- **Nuxt UI** (v4.0.0) - Готовые компоненты
-- **Iconify** (Lucide icons) - Иконки
-- **Custom CSS** - Кастомные стили
+
+  - **Nuxt UI** (v4.0.0) - Ready-made components
+  - **Iconify** (Lucide icons) - Icons
+  - **Custom CSS** - Custom styles
 
 #### Validation & Types
-- **Zod** (v4.1.11) - Runtime валидация и схемы
+
+  - **Zod** (v4.1.11) - Runtime validation and schemas
 
 #### Development Tools
-- **ESLint** + **Prettier** - Качество кода
-- **Nuxt DevTools** - Отладка
-- **Bun** - Пакетный менеджер
 
-### Структура приложения
+  - **ESLint** + **Prettier** - Code quality
+  - **Nuxt DevTools** - Debugging
+  - **Bun** - Package manager
+
+### Application Structure
 
 ```
 app/
-├── assets/          # Статические ресурсы (CSS, изображения)
-├── components/      # Переиспользуемые Vue компоненты
-├── composables/     # Композаблы (логика, хуки)
-├── layouts/         # Шаблоны страниц
-├── pages/           # Страницы (file-based routing)
-├── stores/          # Pinia хранилища
-└── middleware/      # Middleware для роутинга (планируется)
+├── assets/          # Static assets (CSS, images)
+├── components/      # Reusable Vue components
+├── composables/     # Composables (logic, hooks)
+├── layouts/         # Page layouts
+├── pages/           # Pages (file-based routing)
+├── stores/          # Pinia stores
+└── middleware/      # Routing middleware (planned)
 ```
 
-## Детальный план разработки
+## Detailed Development Plan
 
-### Фаза 1: Инфраструктура и базовая настройка ✅
+### Phase 1: Infrastructure and Basic Setup ✅
 
-**Статус:** Завершено
+**Status:** Completed
 
-**Выполненные задачи:**
-- [x] Инициализация Nuxt 4 проекта
-- [x] Настройка TypeScript конфигурации
-- [x] Установка и настройка Nuxt UI
-- [x] Настройка Pinia с персистентностью
-- [x] Конфигурация ESLint и Prettier
-- [x] Настройка Zod для валидации
-- [x] Настройка прокси для API
-- [x] Конфигурация Docker
+**Completed Tasks:**
 
-**Результат:**
-- Полностью настроенное окружение разработки
-- Готовая структура проекта
-- Настроенные инструменты качества кода
+  - [x] Nuxt 4 project initialization
+  - [x] TypeScript configuration setup
+  - [x] Nuxt UI installation and setup
+  - [x] Pinia setup with persistence
+  - [x] ESLint and Prettier configuration
+  - [x] Zod setup for validation
+  - [x] API proxy setup
+  - [x] Docker configuration
 
----
+**Result:**
 
-### Фаза 2: Базовая архитектура ✅
+  - Fully configured development environment
+  - Ready project structure
+  - Configured code quality tools
 
-**Статус:** Завершено
+-----
 
-**Выполненные задачи:**
-- [x] Создание базовой структуры директорий
-- [x] Настройка Pinia stores (user, token)
-- [x] Создание композабла `useApiFetch`
-- [x] Создание default layout
-- [x] Создание компонента AppHeader
-- [x] Настройка file-based routing
+### Phase 2: Basic Architecture ✅
 
-**Компоненты:**
+**Status:** Completed
+
+**Completed Tasks:**
+
+  - [x] Creation of basic directory structure
+  - [x] Pinia stores setup (user, token)
+  - [x] Creation of `useApiFetch` composable
+  - [x] Default layout creation
+  - [x] AppHeader component creation
+  - [x] File-based routing setup
+
+**Components:**
 
 #### Stores
-1. **token.ts** - Управление JWT токенами
-   - Хранение access/refresh токенов
-   - Автоматическое обновление токенов
-   - Персистентность в localStorage
 
-2. **user.ts** - Управление данными пользователя
-   - Профиль пользователя
-   - Баланс и валюта
-   - Персистентность в localStorage
+1.  **token.ts** - JWT token management
+
+      - Storage of access/refresh tokens
+      - Automatic token refresh
+      - Persistence in localStorage
+
+2.  **user.ts** - User data management
+
+      - User profile
+      - Balance and currency
+      - Persistence in localStorage
 
 #### Composables
-1. **useApiFetch.ts** - Обертка над $fetch
-   - Автоматическая подстановка токенов
-   - Обработка ошибок
-   - Type-safe запросы
 
-**Результат:**
-- Готовая архитектура для работы с API
-- Система управления состоянием
-- Переиспользуемая логика
+1.  **useApiFetch.ts** - Wrapper over $fetch
+      - Automatic token injection
+      - Error handling
+      - Type-safe requests
 
----
+**Result:**
 
-### Фаза 3: Аутентификация 🔄
+  - Ready architecture for API interaction
+  - State management system
+  - Reusable logic
 
-**Статус:** В процессе
+-----
 
-**Текущий прогресс:**
-- [x] Страница `/login`
-- [x] Компонент LoginForm
-- [x] Компонент RegisterForm
-- [x] Базовая валидация форм
-- [ ] Интеграция с API бэкенда
-- [ ] Обработка токенов
-- [ ] Middleware для защиты роутов
-- [ ] Обработка ошибок авторизации
+### Phase 3: Authentication 🔄
 
-**Задачи:**
+**Status:** In Progress
 
-#### 3.1 Интеграция с API
-- [ ] Подключить endpoint `/auth/login`
-- [ ] Подключить endpoint `/auth/register`
-- [ ] Подключить endpoint `/auth/refresh`
-- [ ] Обработка ответов сервера
-- [ ] Сохранение токенов в store
+**Current Progress:**
 
-#### 3.2 Защита роутов
-- [ ] Создать middleware `auth.ts`
-- [ ] Проверка наличия токена
-- [ ] Автоматический редирект на `/login`
-- [ ] Проверка валидности токена
+  - [x] `/login` page
+  - [x] LoginForm component
+  - [x] RegisterForm component
+  - [x] Basic form validation
+  - [ ] Backend API integration
+  - [ ] Token handling
+  - [ ] Middleware for route protection
+  - [ ] Auth error handling
 
-#### 3.3 UX улучшения
-- [ ] Loading состояния
-- [ ] Обработка ошибок (toast notifications)
-- [ ] Валидация форм с Zod
-- [ ] Автоматический логин после регистрации
+**Tasks:**
 
-**Зависимости:**
-- Backend API endpoints для auth
-- Определенная структура JWT токенов
+#### 3.1 API Integration
 
----
+  - [ ] Connect `/auth/login` endpoint
+  - [ ] Connect `/auth/register` endpoint
+  - [ ] Connect `/auth/refresh` endpoint
+  - [ ] Server response handling
+  - [ ] Saving tokens to store
 
-### Фаза 4: Личный кабинет 📋
+#### 3.2 Route Protection
 
-**Статус:** Запланировано
+  - [ ] Create `auth.ts` middleware
+  - [ ] Check token existence
+  - [ ] Automatic redirect to `/login`
+  - [ ] Check token validity
 
-**Задачи:**
+#### 3.3 UX Improvements
 
-#### 4.1 Страница профиля
-- [ ] Создать `/profile/[id]` динамический роут
-- [ ] Отображение информации профиля
-- [ ] Компонент аватара
-- [ ] Отображение статистики игрока
+  - [ ] Loading states
+  - [ ] Error handling (toast notifications)
+  - [ ] Form validation with Zod
+  - [ ] Automatic login after registration
 
-#### 4.2 Редактирование профиля
-- [ ] Форма редактирования профиля
-- [ ] Загрузка аватара
-- [ ] Валидация данных
-- [ ] Сохранение изменений через API
+**Dependencies:**
 
-#### 4.3 Баланс и валюта
-- [ ] Компонент отображения баланса
-- [ ] История транзакций
-- [ ] Фильтрация истории
-- [ ] Пагинация
+  - Backend API endpoints for auth
+  - Defined JWT token structure
 
-#### 4.4 Настройки
-- [ ] Страница настроек
-- [ ] Настройки уведомлений
-- [ ] Настройки приватности
-- [ ] Смена пароля
-- [ ] Удаление аккаунта
+-----
 
-**Компоненты для создания:**
-- `ProfileCard.vue` - Карточка профиля
-- `ProfileEditor.vue` - Редактор профиля
-- `BalanceWidget.vue` - Виджет баланса
-- `TransactionHistory.vue` - История транзакций
-- `SettingsForm.vue` - Форма настроек
+### Phase 4: User Profile 📋
 
-**API endpoints:**
-- `GET /api/profile/:id` - Получение профиля
-- `PUT /api/profile/:id` - Обновление профиля
-- `GET /api/transactions` - История транзакций
-- `PUT /api/settings` - Обновление настроек
+**Status:** Planned
 
----
+**Tasks:**
 
-### Фаза 5: Игровой интерфейс 📋
+#### 4.1 Profile Page
 
-**Статус:** Начато (базовая страница)
+  - [ ] Create `/profile/[id]` dynamic route
+  - [ ] Profile information display
+  - [ ] Avatar component
+  - [ ] Player statistics display
 
-**Задачи:**
+#### 4.2 Profile Editing
 
-#### 5.1 Игровой мир
-- [x] Базовая страница `/game`
-- [ ] Компонент карты мира
-- [ ] Визуализация локаций
-- [ ] Навигация по миру
-- [ ] Анимации переходов
+  - [ ] Profile edit form
+  - [ ] Avatar upload
+  - [ ] Data validation
+  - [ ] Saving changes via API
 
-#### 5.2 Система локаций
-- [ ] Компонент локации
-- [ ] Детали локации
-- [ ] Доступные действия
-- [ ] Персонажи в локации
+#### 4.3 Balance and Currency
 
-#### 5.3 Система персонажей
-- [ ] Карточка персонажа
-- [ ] Детальная информация
-- [ ] Инвентарь персонажа
-- [ ] Характеристики и статы
+  - [ ] Balance display component
+  - [ ] Transaction history
+  - [ ] History filtering
+  - [ ] Pagination
 
-#### 5.4 События и квесты
-- [ ] Компонент события
-- [ ] Отображение вариантов выбора
-- [ ] Система принятия решений
-- [ ] Последствия выборов
-- [ ] История событий
+#### 4.4 Settings
 
-#### 5.5 Гача-механика
-- [ ] Интерфейс гача
-- [ ] Анимация открытия
-- [ ] Отображение полученных персонажей
-- [ ] История гача-роллов
+  - [ ] Settings page
+  - [ ] Notification settings
+  - [ ] Privacy settings
+  - [ ] Password change
+  - [ ] Account deletion
 
-**Компоненты для создания:**
-- `GameWorld.vue` - Игровой мир
-- `LocationCard.vue` - Карточка локации
-- `CharacterCard.vue` - Карточка персонажа
-- `EventDialog.vue` - Диалог события
-- `ChoiceButton.vue` - Кнопка выбора
-- `GachaInterface.vue` - Интерфейс гача
-- `GachaAnimation.vue` - Анимация гача
+**Components to create:**
 
-**Stores:**
-- `game.ts` - Состояние игры
-- `characters.ts` - Персонажи игрока
-- `locations.ts` - Локации
-- `events.ts` - События
+  - `ProfileCard.vue` - Profile card
+  - `ProfileEditor.vue` - Profile editor
+  - `BalanceWidget.vue` - Balance widget
+  - `TransactionHistory.vue` - Transaction history
+  - `SettingsForm.vue` - Settings form
 
 **API endpoints:**
-- `GET /api/game/world` - Состояние мира
-- `GET /api/game/locations` - Локации
-- `GET /api/game/characters` - Персонажи
-- `GET /api/game/events` - Текущие события
-- `POST /api/game/choice` - Сделать выбор
-- `POST /api/game/gacha` - Гача-ролл
 
----
+  - `GET /api/profile/:id` - Get profile
+  - `PUT /api/profile/:id` - Update profile
+  - `GET /api/transactions` - Transaction history
+  - `PUT /api/settings` - Update settings
 
-### Фаза 6: Платежная система 📋
+-----
 
-**Статус:** Запланировано
+### Phase 5: Game Interface 📋
 
-**Задачи:**
+**Status:** Started (basic page)
 
-#### 6.1 Магазин
-- [ ] Страница магазина `/shop`
-- [ ] Каталог товаров
-- [ ] Фильтрация и поиск
-- [ ] Корзина
+**Tasks:**
 
-#### 6.2 Премиум-статус
-- [ ] Страница премиум-подписки
-- [ ] Сравнение тарифов
-- [ ] Преимущества премиума
-- [ ] Покупка подписки
+#### 5.1 Game World
 
-#### 6.3 Внутриигровая валюта
-- [ ] Пакеты валюты
-- [ ] Бонусы за покупку
-- [ ] Специальные предложения
+  - [x] Basic `/game` page
+  - [ ] World map component
+  - [ ] Location visualization
+  - [ ] World navigation
+  - [ ] Transition animations
 
-#### 6.4 Платежная интеграция
-- [ ] Интеграция платежной системы
-- [ ] Обработка платежей
-- [ ] Подтверждение оплаты
-- [ ] История покупок
+#### 5.2 Location System
 
-**Компоненты:**
-- `ShopCatalog.vue` - Каталог магазина
-- `ProductCard.vue` - Карточка товара
-- `ShoppingCart.vue` - Корзина
-- `PremiumPlans.vue` - Тарифы премиума
-- `PaymentForm.vue` - Форма оплаты
-- `PurchaseHistory.vue` - История покупок
+  - [ ] Location component
+  - [ ] Location details
+  - [ ] Available actions
+  - [ ] Characters in location
+
+#### 5.3 Character System
+
+  - [ ] Character card
+  - [ ] Detailed information
+  - [ ] Character inventory
+  - [ ] Characteristics and stats
+
+#### 5.4 Events and Quests
+
+  - [ ] Event component
+  - [ ] Choice options display
+  - [ ] Decision-making system
+  - [ ] Consequences of choices
+  - [ ] Event history
+
+#### 5.5 Gacha Mechanics
+
+  - [ ] Gacha interface
+  - [ ] Opening animation
+  - [ ] Obtained characters display
+  - [ ] Gacha roll history
+
+**Components to create:**
+
+  - `GameWorld.vue` - Game world
+  - `LocationCard.vue` - Location card
+  - `CharacterCard.vue` - Character card
+  - `EventDialog.vue` - Event dialog
+  - `ChoiceButton.vue` - Choice button
+  - `GachaInterface.vue` - Gacha interface
+  - `GachaAnimation.vue` - Gacha animation
 
 **Stores:**
-- `shop.ts` - Состояние магазина
-- `cart.ts` - Корзина
-- `premium.ts` - Премиум-статус
+
+  - `game.ts` - Game state
+  - `characters.ts` - Player characters
+  - `locations.ts` - Locations
+  - `events.ts` - Events
 
 **API endpoints:**
-- `GET /api/shop/products` - Товары
-- `POST /api/shop/purchase` - Покупка
-- `GET /api/shop/history` - История
-- `POST /api/payment/create` - Создание платежа
-- `GET /api/payment/status/:id` - Статус платежа
 
----
+  - `GET /api/game/world` - World state
+  - `GET /api/game/locations` - Locations
+  - `GET /api/game/characters` - Characters
+  - `GET /api/game/events` - Current events
+  - `POST /api/game/choice` - Make a choice
+  - `POST /api/game/gacha` - Gacha roll
 
-### Фаза 7: Обучение и онбординг 📋
+-----
 
-**Статус:** Запланировано
+### Phase 6: Payment System 📋
 
-**Задачи:**
+**Status:** Planned
 
-#### 7.1 Туториал
-- [ ] Интерактивный туториал
-- [ ] Пошаговые инструкции
-- [ ] Подсветка элементов
-- [ ] Прогресс туториала
+**Tasks:**
 
-#### 7.2 Подсказки
-- [ ] Система подсказок
-- [ ] Контекстные подсказки
-- [ ] Tooltips
-- [ ] Справочная информация
+#### 6.1 Shop
 
-#### 7.3 Достижения
-- [ ] Система достижений
-- [ ] Прогресс достижений
-- [ ] Награды за достижения
+  - [ ] Shop page `/shop`
+  - [ ] Product catalog
+  - [ ] Filtering and search
+  - [ ] Shopping cart
 
-**Компоненты:**
-- `TutorialOverlay.vue` - Оверлей туториала
-- `TutorialStep.vue` - Шаг туториала
-- `Tooltip.vue` - Подсказка
-- `AchievementCard.vue` - Карточка достижения
-- `ProgressBar.vue` - Прогресс-бар
+#### 6.2 Premium Status
+
+  - [ ] Premium subscription page
+  - [ ] Plan comparison
+  - [ ] Premium benefits
+  - [ ] Subscription purchase
+
+#### 6.3 In-game Currency
+
+  - [ ] Currency bundles
+  - [ ] Purchase bonuses
+  - [ ] Special offers
+
+#### 6.4 Payment Integration
+
+  - [ ] Payment system integration
+  - [ ] Payment processing
+  - [ ] Payment confirmation
+  - [ ] Purchase history
+
+**Components:**
+
+  - `ShopCatalog.vue` - Shop catalog
+  - `ProductCard.vue` - Product card
+  - `ShoppingCart.vue` - Shopping cart
+  - `PremiumPlans.vue` - Premium plans
+  - `PaymentForm.vue` - Payment form
+  - `PurchaseHistory.vue` - Purchase history
 
 **Stores:**
-- `tutorial.ts` - Состояние туториала
-- `achievements.ts` - Достижения
 
----
+  - `shop.ts` - Shop state
+  - `cart.ts` - Shopping cart
+  - `premium.ts` - Premium status
 
-### Фаза 8: Тестирование и оптимизация 📋
+**API endpoints:**
 
-**Статус:** Запланировано
+  - `GET /api/shop/products` - Products
+  - `POST /api/shop/purchase` - Purchase
+  - `GET /api/shop/history` - History
+  - `POST /api/payment/create` - Create payment
+  - `GET /api/payment/status/:id` - Payment status
 
-**Задачи:**
+-----
 
-#### 8.1 Unit тесты
-- [ ] Тесты для stores
-- [ ] Тесты для composables
-- [ ] Тесты для утилит
-- [ ] Настройка Vitest
+### Phase 7: Tutorial and Onboarding 📋
 
-#### 8.2 E2E тесты
-- [ ] Тесты авторизации
-- [ ] Тесты игрового процесса
-- [ ] Тесты покупок
-- [ ] Настройка Playwright
+**Status:** Planned
 
-#### 8.3 Оптимизация производительности
-- [ ] Lazy loading компонентов
-- [ ] Оптимизация изображений
-- [ ] Code splitting
-- [ ] Кэширование API запросов
-- [ ] Виртуализация списков
+**Tasks:**
+
+#### 7.1 Tutorial
+
+  - [ ] Interactive tutorial
+  - [ ] Step-by-step instructions
+  - [ ] Element highlighting
+  - [ ] Tutorial progress
+
+#### 7.2 Hints
+
+  - [ ] Hint system
+  - [ ] Contextual hints
+  - [ ] Tooltips
+  - [ ] Help information
+
+#### 7.3 Achievements
+
+  - [ ] Achievement system
+  - [ ] Achievement progress
+  - [ ] Achievement rewards
+
+**Components:**
+
+  - `TutorialOverlay.vue` - Tutorial overlay
+  - `TutorialStep.vue` - Tutorial step
+  - `Tooltip.vue` - Tooltip
+  - `AchievementCard.vue` - Achievement card
+  - `ProgressBar.vue` - Progress bar
+
+**Stores:**
+
+  - `tutorial.ts` - Tutorial state
+  - `achievements.ts` - Achievements
+
+-----
+
+### Phase 8: Testing and Optimization 📋
+
+**Status:** Planned
+
+**Tasks:**
+
+#### 8.1 Unit Tests
+
+  - [ ] Tests for stores
+  - [ ] Tests for composables
+  - [ ] Tests for utils
+  - [ ] Vitest setup
+
+#### 8.2 E2E Tests
+
+  - [ ] Auth tests
+  - [ ] Gameplay tests
+  - [ ] Purchase tests
+  - [ ] Playwright setup
+
+#### 8.3 Performance Optimization
+
+  - [ ] Component lazy loading
+  - [ ] Image optimization
+  - [ ] Code splitting
+  - [ ] API request caching
+  - [ ] List virtualization
 
 #### 8.4 SEO
-- [ ] Meta теги
-- [ ] Open Graph
-- [ ] Sitemap
-- [ ] robots.txt
 
-**Инструменты:**
-- Vitest - Unit тесты
-- Playwright - E2E тесты
-- Lighthouse - Аудит производительности
+  - [ ] Meta tags
+  - [ ] Open Graph
+  - [ ] Sitemap
+  - [ ] robots.txt
 
----
+**Tools:**
 
-### Фаза 9: Деплой и CI/CD 📋
+  - Vitest - Unit tests
+  - Playwright - E2E tests
+  - Lighthouse - Performance audit
 
-**Статус:** Запланировано
+-----
 
-**Задачи:**
+### Phase 9: Deploy and CI/CD 📋
+
+**Status:** Planned
+
+**Tasks:**
 
 #### 9.1 Docker
-- [x] Dockerfile создан
-- [ ] Docker Compose для dev
-- [ ] Оптимизация образа
-- [ ] Multi-stage build
+
+  - [x] Dockerfile created
+  - [ ] Docker Compose for dev
+  - [ ] Image optimization
+  - [ ] Multi-stage build
 
 #### 9.2 CI/CD
-- [ ] GitHub Actions / GitLab CI
-- [ ] Автоматические тесты
-- [ ] Автоматический деплой
-- [ ] Версионирование
+
+  - [ ] GitHub Actions / GitLab CI
+  - [ ] Automated tests
+  - [ ] Automated deploy
+  - [ ] Versioning
 
 #### 9.3 Production
-- [ ] Настройка сервера
-- [ ] SSL сертификаты
-- [ ] CDN для статики
-- [ ] Мониторинг и логирование
 
----
+  - [ ] Server setup
+  - [ ] SSL certificates
+  - [ ] CDN for static assets
+  - [ ] Monitoring and logging
 
-## Приоритеты разработки
+-----
 
-### Высокий приоритет (MVP)
-1. ✅ Базовая инфраструктура
-2. 🔄 Аутентификация
-3. 📋 Базовый игровой интерфейс
-4. 📋 Система событий и выборов
+## Development Priorities
 
-### Средний приоритет
-5. 📋 Личный кабинет
-6. 📋 Гача-механика
-7. 📋 Туториал
+### High Priority (MVP)
 
-### Низкий приоритет
-8. 📋 Платежная система
-9. 📋 Достижения
-10. 📋 Расширенные настройки
+1.  ✅ Basic Infrastructure
+2.  🔄 Authentication
+3.  📋 Basic Game Interface
+4.  📋 Event and Choice System
 
----
+### Medium Priority
 
-## Технические требования
+5.  📋 User Profile
+6.  📋 Gacha Mechanics
+7.  📋 Tutorial
 
-### Производительность
-- First Contentful Paint < 1.5s
-- Time to Interactive < 3.5s
-- Lighthouse Score > 90
+### Low Priority
 
-### Совместимость
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-- Мобильные браузеры
+8.  📋 Payment System
+9.  📋 Achievements
+10. 📋 Advanced Settings
 
-### Безопасность
-- HTTPS обязательно
-- XSS защита
-- CSRF защита
-- Безопасное хранение токенов
-- Rate limiting
+-----
 
----
+## Technical Requirements
 
-## Зависимости от Backend
+### Performance
 
-### Необходимые API endpoints
+  - First Contentful Paint \< 1.5s
+  - Time to Interactive \< 3.5s
+  - Lighthouse Score \> 90
 
-#### Аутентификация
-- `POST /auth/register` - Регистрация
-- `POST /auth/login` - Вход
-- `POST /auth/refresh` - Обновление токена
-- `POST /auth/logout` - Выход
+### Compatibility
 
-#### Пользователь
-- `GET /api/user/profile` - Профиль
-- `PUT /api/user/profile` - Обновление профиля
-- `GET /api/user/balance` - Баланс
-- `GET /api/user/transactions` - Транзакции
+  - Chrome 90+
+  - Firefox 88+
+  - Safari 14+
+  - Edge 90+
+  - Mobile browsers
 
-#### Игра
-- `GET /api/game/world` - Состояние мира
-- `GET /api/game/locations` - Локации
-- `GET /api/game/characters` - Персонажи
-- `GET /api/game/events` - События
-- `POST /api/game/choice` - Выбор
-- `POST /api/game/gacha` - Гача
+### Security
 
-#### Магазин
-- `GET /api/shop/products` - Товары
-- `POST /api/shop/purchase` - Покупка
-- `GET /api/shop/history` - История
+  - HTTPS mandatory
+  - XSS protection
+  - CSRF protection
+  - Secure token storage
+  - Rate limiting
 
----
+-----
 
-## Метрики успеха
+## Backend Dependencies
 
-### Технические метрики
-- ✅ 100% TypeScript coverage
-- ✅ ESLint 0 errors
-- 📋 80%+ test coverage
-- 📋 Lighthouse score > 90
+### Required API Endpoints
 
-### Пользовательские метрики
-- 📋 Время загрузки < 3s
-- 📋 0 критических багов
-- 📋 Responsive на всех устройствах
+#### Authentication
 
----
+  - `POST /auth/register` - Registration
+  - `POST /auth/login` - Login
+  - `POST /auth/refresh` - Refresh token
+  - `POST /auth/logout` - Logout
 
-## Риски и митигация
+#### User
 
-### Риски
-1. **Задержки Backend API** - Может замедлить интеграцию
-   - *Митигация:* Использовать моки для разработки
+  - `GET /api/user/profile` - Profile
+  - `PUT /api/user/profile` - Update profile
+  - `GET /api/user/balance` - Balance
+  - `GET /api/user/transactions` - Transactions
 
-2. **Производительность на мобильных** - Сложные анимации
-   - *Митигация:* Progressive enhancement, оптимизация
+#### Game
 
-3. **Сложность игровой логики** - Может быть сложно поддерживать
-   - *Митигация:* Хорошая архитектура, документация
+  - `GET /api/game/world` - World state
+  - `GET /api/game/locations` - Locations
+  - `GET /api/game/characters` - Characters
+  - `GET /api/game/events` - Events
+  - `POST /api/game/choice` - Choice
+  - `POST /api/game/gacha` - Gacha
 
----
+#### Shop
 
-## Следующие шаги
+  - `GET /api/shop/products` - Products
+  - `POST /api/shop/purchase` - Purchase
+  - `GET /api/shop/history` - History
 
-### Немедленные (Фаза 3)
-1. Завершить интеграцию аутентификации с API
-2. Создать middleware для защиты роутов
-3. Добавить обработку ошибок
+-----
 
-### Краткосрочные (1-2 недели)
-1. Начать разработку личного кабинета
-2. Создать базовые компоненты игрового интерфейса
-3. Настроить систему событий
+## Success Metrics
 
-### Долгосрочные (1+ месяц)
-1. Полная реализация игрового интерфейса
-2. Интеграция платежной системы
-3. Тестирование и оптимизация
+### Technical Metrics
+
+  - ✅ 100% TypeScript coverage
+  - ✅ ESLint 0 errors
+  - 📋 80%+ test coverage
+  - 📋 Lighthouse score \> 90
+
+### User Metrics
+
+  - 📋 Load time \< 3s
+  - 📋 0 critical bugs
+  - 📋 Responsive on all devices
+
+-----
+
+## Risks and Mitigation
+
+### Risks
+
+1.  **Backend API Delays** - May slow down integration
+
+      - *Mitigation:* Use mocks for development
+
+2.  **Mobile Performance** - Complex animations
+
+      - *Mitigation:* Progressive enhancement, optimization
+
+3.  **Game Logic Complexity** - May be hard to maintain
+
+      - *Mitigation:* Good architecture, documentation
+
+-----
+
+## Next Steps
+
+### Immediate (Phase 3)
+
+1.  Complete authentication integration with API
+2.  Create middleware for route protection
+3.  Add error handling
+
+### Short-term (1-2 weeks)
+
+1.  Start user profile development
+2.  Create basic game interface components
+3.  Setup event system
+
+### Long-term (1+ month)
+
+1.  Full game interface implementation
+2.  Payment system integration
+3.  Testing and optimization

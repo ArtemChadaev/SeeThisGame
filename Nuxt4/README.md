@@ -1,234 +1,408 @@
-# Frontend-разработка на Nuxt 4
+# Go 1.25 Backend Development
 
-## 1. Цель
+## 📋 Table of Contents
 
-Создание пользовательского интерфейса для игры "Выбери меня". Фронтенд будет представлять собой одностраничное веб-приложение (SPA), обеспечивающее плавный и отзывчивый игровой опыт.
+  - [Project Goal](https://www.google.com/search?q=%23project-goal)
+  - [Key Features](https://www.google.com/search?q=%23key-features)
+  - [Tech Stack](https://www.google.com/search?q=%23tech-stack)
+  - [Project Architecture](https://www.google.com/search?q=%23project-architecture)
+  - [Project Structure](https://www.google.com/search?q=%23project-structure)
+  - [Database](https://www.google.com/search?q=%23database)
+  - [Installation and Run](https://www.google.com/search?q=%23installation-and-run)
+  - [Configuration](https://www.google.com/search?q=%23configuration)
+  - [Development Stages](https://www.google.com/search?q=%23development-stages)
 
-## 2. Ключевые функции
+## 🎯 Project Goal
 
-- **Регистрация и авторизация:** Формы для входа и создания нового аккаунта
-- **Личный кабинет:** Управление профилем, настройками и просмотр баланса внутриигровой валюты
-- **Платежная система:** Интерфейс для покупки премиум-статуса и донатной валюты
-- **Игровой интерфейс:**
-  - Визуализация игрового мира, локаций и персонажей
-  - Отображение событий (квестов) и вариантов выбора
-  - Интерфейсы для взаимодействия с персонажами и локациями
-  - Гача-механика для получения новых персонажей
-- **Обучение:** Интерактивный туториал для новых игроков
+Building a high-performance and scalable server application to handle all game logic, interact with the database, and provide an API for the client side of the "Choose Me" game.
 
-## 3. Используемые технологии
+## 🚀 Key Features
 
-### Основной стек
+  - **Client API:** Provision of a RESTful API for all client requests (registration, fetching world data, player actions).
+  - **User Management:** Logic for registration, authorization, and session management with multi-device support.
+  - **Clan System:** A full-fledged clan system with roles and custom names.
+  - **Game Logic:**
+      - Generation and management of the game world state.
+      - Procedural character generation (based on JSON tags).
+      - Handling of game events and player actions.
+      - Calculation of decay mechanics, leveling, and NPC interactions.
+  - **n8n Integration:** Interaction with the n8n service to trigger image generation workflows.
+  - **Payment Processing:** Integration with payment gateways.
 
-- **Фреймворк:** [Nuxt 4](https://nuxt.com/) (v4.1.2) - полнофункциональный Vue.js фреймворк
-- **UI Framework:** Vue 3 (v3.5.18) - прогрессивный JavaScript фреймворк
-- **Язык:** TypeScript (v5.6.3) - типизированный JavaScript
+## 🛠 Tech Stack
 
-### UI и компоненты
+### Core Technologies
 
-- **Библиотека компонентов:** [@nuxt/ui](https://ui.nuxt.com/) (v4.0.0) - готовые UI компоненты для Nuxt
-- **Иконки:** [@iconify-json/lucide](https://lucide.dev/) - набор иконок Lucide через Iconify
+| Technology | Version | Purpose |
+|------------|--------|------------|
+| **Go** | 1.25.1 | Main programming language |
+| **Gin** | 1.10.1 | Web framework for building RESTful APIs |
+| **PostgreSQL** | - | Primary relational database |
+| **Redis** | 9.14.0 | In-memory DB for caching and sessions |
+| **Docker** | - | Application containerization |
 
-### Управление состоянием
+### Libraries and Dependencies
 
-- **State Management:** [Pinia](https://pinia.vuejs.org/) (v3.0.3) - официальное хранилище состояний для Vue
-- **Pinia Nuxt:** @pinia/nuxt (v0.11.2) - интеграция Pinia с Nuxt
-- **Персистентность:** pinia-plugin-persistedstate (v4.5.0) - сохранение состояния в localStorage
+#### Database Interaction
 
-### Валидация и типизация
+  - **sqlx** (1.4.0) - Extension for database/sql with convenient methods.
+  - **lib/pq** (1.10.9) - PostgreSQL driver.
+  - **go-redis** (9.14.0) - Client for Redis.
 
-- **Схемы валидации:** [Zod](https://zod.dev/) (v4.1.11) - TypeScript-first валидация схем
+#### Authentication and Security
 
-### Роутинг
+  - **jwt/v5** (5.3.0) - JSON Web Tokens for authentication.
+  - **uuid** (1.6.0) - Generation of unique identifiers.
 
-- **Маршрутизация:** Vue Router (v4.5.1) - официальный роутер для Vue.js (встроен в Nuxt)
+#### Configuration and Logging
 
-### Инструменты разработки
+  - **Viper** (1.21.0) - Application configuration management.
+  - **Logrus** (1.9.3) - Structured logging.
+  - **godotenv** (1.5.1) - Loading environment variables from a .env file.
 
-- **Линтер:** ESLint с @nuxt/eslint (v1.8.0) и typescript-eslint (v8.39.1)
-- **Форматирование:** Prettier (v3.6.2) с интеграцией в ESLint
-- **Сборщик:** Vite (встроен в Nuxt 4) - быстрый сборщик нового поколения
-- **Пакетный менеджер:** Bun - быстрая альтернатива npm/yarn
+## 🏗 Project Architecture
 
-### Дополнительные модули
-
-- **DevTools:** Nuxt DevTools - встроенные инструменты разработчика
-- **CSS:** Custom CSS в `assets/css/main.css`
-- **Proxy:** Настроенный прокси для API запросов к бэкенду на Go
-
-## 4. Структура проекта
+The project is built on **Clean Architecture** principles, separated into three main layers:
 
 ```
-Nuxt4/
-├── app/                          # Основная директория приложения
-│   ├── assets/                   # Статические ресурсы
-│   │   ├── css/                  # Стили
-│   │   │   └── main.css          # Основной файл стилей
-│   │   └── lost-valley.jpg       # Изображения
-│   ├── components/               # Vue компоненты
-│   │   └── AppHeader.vue         # Компонент шапки приложения
-│   ├── composables/              # Композаблы (переиспользуемая логика)
-│   │   └── useApiFetch.ts        # Композабл для API запросов
-│   ├── layouts/                  # Layouts (шаблоны страниц)
-│   │   └── default.vue           # Дефолтный layout
-│   ├── pages/                    # Страницы приложения (file-based routing)
-│   │   ├── game/                 # Игровые страницы
-│   │   │   └── index.vue         # Главная игровая страница
-│   │   ├── login/                # Страницы авторизации
-│   │   │   ├── LoginForm.vue     # Форма входа
-│   │   │   ├── RegisterForm.vue  # Форма регистрации
-│   │   │   └── index.vue         # Главная страница логина
-│   │   ├── profile/              # Профиль пользователя
-│   │   │   └── [id]/             # Динамический роутинг профиля
-│   │   ├── index.vue             # Главная страница
-│   │   └── start.vue             # Стартовая страница
-│   └── stores/                   # Pinia хранилища
-│       ├── token.ts              # Управление токенами авторизации
-│       └── user.ts               # Управление данными пользователя
-├── public/                       # Публичные файлы (доступны напрямую)
-├── .gitignore                    # Git ignore файл
-├── .prettierrc.json              # Конфигурация Prettier
-├── Dockerfile                    # Docker конфигурация
-├── eslint.config.mjs             # Конфигурация ESLint
-├── nuxt.config.ts                # Конфигурация Nuxt
-├── package.json                  # Зависимости проекта
-├── tsconfig.json                 # Конфигурация TypeScript
-├── bun.lock                      # Lock-файл Bun
-└── README.md                     # Документация проекта
+┌─────────────────────────────────────────┐
+│         HTTP Layer (Gin)                │
+│  ┌───────────────────────────────────┐  │
+│  │         Handlers                  │  │
+│  │  • auth.go                        │  │
+│  │  • user_settings.go               │  │
+│  │  • middleware.go                  │  │
+│  └───────────────────────────────────┘  │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         Business Logic Layer            │
+│  ┌───────────────────────────────────┐  │
+│  │         Services                  │  │
+│  │  • auth.go                        │  │
+│  │  • user_settings.go               │  │
+│  └───────────────────────────────────┘  │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         Data Access Layer               │
+│  ┌───────────────────────────────────┐  │
+│  │       Repositories                │  │
+│  │  • auth_postgres.go               │  │
+│  │  • user_setting_postgres.go       │  │
+│  │  • redis.go                       │  │
+│  └───────────────────────────────────┘  │
+└─────────────────┬───────────────────────┘
+                  │
+        ┌─────────┴─────────┐
+        ▼                   ▼
+  ┌──────────┐        ┌──────────┐
+  │PostgreSQL│        │  Redis   │
+  └──────────┘        └──────────┘
 ```
 
-## 5. Этапы разработки
+### Design Patterns
 
-### Этап 1: Настройка проекта ✅
+  - **Repository Pattern** - Abstraction of data access.
+  - **Dependency Injection** - Injecting dependencies via constructors.
+  - **Middleware Pattern** - Processing requests through a middleware chain.
+  - **Clean Architecture** - Separation into independent layers.
 
-- [x] Инициализация проекта Nuxt 4
-- [x] Установка зависимостей (Nuxt UI, Pinia, Zod)
-- [x] Настройка ESLint и Prettier
-- [x] Настройка TypeScript
-- [x] Конфигурация Nuxt (модули, прокси, runtime config)
+## 📁 Project Structure
 
-### Этап 2: Базовая архитектура ✅
+```
+Go1.25/
+├── cmd/
+│   └── main.go                      # Application entry point
+│
+├── pkg/                             # Main application code
+│   ├── handler/                     # HTTP handlers (Gin routes)
+│   │   ├── handler.go              # Routes initialization
+│   │   ├── auth.go                 # Authentication (login, register)
+│   │   ├── user_settings.go        # User settings
+│   │   ├── middleware.go           # JWT middleware, CORS
+│   │   └── response.go             # Standardized responses
+│   │
+│   ├── service/                     # Business logic
+│   │   ├── service.go              # Services initialization
+│   │   ├── auth.go                 # Authentication logic
+│   │   └── user_settings.go        # User settings logic
+│   │
+│   └── repository/                  # Database interaction
+│       ├── repository.go           # Repositories initialization
+│       ├── postgres.go             # PostgreSQL connection
+│       ├── redis.go                # Redis connection
+│       ├── auth_postgres.go        # Auth repository
+│       └── user_setting_postgres.go # Settings repository
+│
+├── configs/
+│   └── config.yml                   # Application configuration
+│
+├── migrate/                         # Database migrations
+│   ├── 000001_init.up.sql          # Table creation
+│   └── 000001_init.down.sql        # Rollback migrations
+│
+├── Dockerfile                       # Multi-stage Docker build
+├── .env                            # Environment variables (not in git)
+├── .gitignore
+├── go.mod                          # Project dependencies
+├── go.sum                          # Dependencies checksums
+├── server.go                       # HTTP server
+├── user.go                         # User model
+├── errors.go                       # Custom errors
+└── README.md
+```
 
-- [x] Создание структуры директорий
-- [x] Настройка Pinia stores (user, token)
-- [x] Создание композабла для API запросов
-- [x] Настройка layouts и базовых компонентов
-- [x] Настройка роутинга
+## 🗄 Database
 
-### Этап 3: Аутентификация 🔄
+### PostgreSQL Schema
 
-- [x] Страница логина/регистрации
-- [x] Формы входа и регистрации
-- [ ] Интеграция с API бэкенда
-- [ ] Обработка токенов и сессий
-- [ ] Защита роутов (middleware)
+#### Main Tables
 
-### Этап 4: Личный кабинет 📋
+**users** - System users
 
-- [ ] Страница профиля пользователя
-- [ ] Редактирование профиля
-- [ ] Отображение баланса
-- [ ] История транзакций
-- [ ] Настройки аккаунта
+```sql
+- id (SERIAL PRIMARY KEY)
+- email (VARCHAR UNIQUE)
+- password_hash (VARCHAR)
+```
 
-### Этап 5: Игровой интерфейс 📋
+**user\_refresh\_tokens** - Refresh tokens for different devices
 
-- [x] Базовая страница игры
-- [ ] Визуализация игрового мира
-- [ ] Отображение локаций
-- [ ] Система персонажей
-- [ ] Интерфейс событий/квестов
-- [ ] Система выборов
-- [ ] Гача-механика
+```sql
+- id (SERIAL PRIMARY KEY)
+- user_id (INT FK → users)
+- token (VARCHAR UNIQUE)
+- expires_at (TIMESTAMPTZ)
+- name_device (VARCHAR)
+- device_info (VARCHAR)
+```
 
-### Этап 6: Платежная система 📋
+**user\_settings** - User settings and profile
 
-- [ ] Интерфейс магазина
-- [ ] Покупка премиум-статуса
-- [ ] Покупка внутриигровой валюты
-- [ ] Интеграция платежных систем
-- [ ] История покупок
+```sql
+- user_id (INT PRIMARY KEY FK → users)
+- name (VARCHAR)
+- icon (VARCHAR)
+- coin (INT)
+- date_of_registration (TIMESTAMPTZ)
+- paid_subscription (BOOLEAN)
+- date_of_paid_subscription (TIMESTAMPTZ)
+```
 
-### Этап 7: Обучение 📋
+#### Clan System
 
-- [ ] Интерактивный туториал
-- [ ] Подсказки для новых игроков
-- [ ] Система достижений/прогресса
+**clan** - Clans
 
-### Этап 8: Тестирование и оптимизация 📋
+```sql
+- id (SERIAL PRIMARY KEY)
+- name (VARCHAR UNIQUE)
+- description (TEXT)
+- other (JSONB)
+```
 
-- [ ] Unit тесты для композаблов
-- [ ] E2E тесты основных сценариев
-- [ ] Оптимизация производительности
-- [ ] Оптимизация сборки
-- [ ] SEO оптимизация
+**roles** - System roles (1-5, where 1 is the highest)
 
-### Этап 9: Деплой 📋
+```sql
+- id (SMALLINT PRIMARY KEY)
+- name (VARCHAR)
+```
 
-- [ ] Настройка Docker
-- [ ] CI/CD pipeline
-- [ ] Деплой на production
+**clan\_members** - Clan participants
 
-**Легенда:** ✅ Завершено | 🔄 В процессе | 📋 Запланировано
+```sql
+- clan_id (INT FK → clan)
+- user_id (INT FK → users)
+- role_id (SMALLINT FK → roles)
+- PRIMARY KEY (clan_id, user_id)
+```
 
-## 6. Команды для разработки
+**clan\_role\_names** - Custom role names for each clan
+
+```sql
+- clan_id (INT FK → clan)
+- role_id (SMALLINT FK → roles)
+- custom_name (VARCHAR)
+- PRIMARY KEY (clan_id, role_id)
+```
+
+#### Game Entities
+
+**cards** - Character cards
+
+```sql
+- id (SERIAL PRIMARY KEY)
+- user_id (INT FK → users)
+- name (VARCHAR)
+- description (TEXT)
+- other (JSONB)
+```
+
+**items** - Game items
+
+```sql
+- id (SERIAL PRIMARY KEY)
+- name (VARCHAR)
+- description (TEXT)
+- HaveCard (BOOLEAN)
+- other (JSONB)
+```
+
+### Redis
+
+Used for:
+
+  - **Caching** - Frequently requested data
+  - **Sessions** - JWT tokens and refresh tokens
+  - **Rate limiting** - Limiting request frequency
+
+## 🚀 Installation and Run
+
+### Prerequisites
+
+  - Go 1.25.1 or higher
+  - PostgreSQL 14+
+  - Redis 7+
+  - Docker and Docker Compose (optional)
+
+### Local Development
+
+1.  **Clone the repository**
+
+<!-- end list -->
 
 ```bash
-# Установка зависимостей
-bun install
-
-# Запуск dev сервера
-bun run dev
-
-# Сборка для production
-bun run build
-
-# Предпросмотр production сборки
-bun run preview
-
-# Генерация статического сайта
-bun run generate
-
-# Линтинг и исправление
-bun run lint
-
-# Форматирование кода
-bun run format
+git clone <repository-url>
+cd Go1.25
 ```
 
-## 7. Конфигурация окружения
+2.  **Install dependencies**
 
-Создайте файл `.env` в корне проекта:
+<!-- end list -->
+
+```bash
+go mod download
+```
+
+3.  **Configure environment variables**
+
+Create a `.env` file in the project root:
 
 ```env
-# API бэкенда
-NUXT_PUBLIC_API_BASE=http://localhost:8000/
-API_BASE_URL=http://localhost:8080
+DB_PASSWORD=your_postgres_password
+REDIS_PASSWORD=your_redis_password
+JWT_SECRET=your_jwt_secret_key
 ```
 
-## 8. Особенности реализации
+4.  **Start PostgreSQL and Redis**
 
-### Управление состоянием
+<!-- end list -->
 
-- Использование Pinia для глобального состояния
-- Персистентность критичных данных (токены, пользователь) в localStorage
-- Композаблы для переиспользуемой логики
+```bash
+# Using Docker Compose (recommended)
+docker-compose up -d postgres redis
+```
 
-### API интеграция
+5.  **Apply migrations**
 
-- Кастомный композабл `useApiFetch` для всех API запросов
-- Автоматическая подстановка токенов авторизации
-- Прокси для API запросов в `nuxt.config.ts`
+<!-- end list -->
 
-### Типизация
+```bash
+# Use migrate CLI or execute SQL manually
+psql -U postgres -d postgres -f migrate/000001_init.up.sql
+```
 
-- Полная типизация TypeScript
-- Валидация данных через Zod схемы
-- Type-safe API запросы
+6.  **Run the application**
 
-### UI/UX
+<!-- end list -->
 
-- Использование готовых компонентов Nuxt UI
-- Кастомные стили в `main.css`
-- Иконки через Iconify (Lucide набор)
-- Планируется темная тема (пока отключена)
+```bash
+go run cmd/main.go
+```
+
+The server will start at `http://localhost:8080`
+
+### Docker Deployment
+
+The project uses a multi-stage Docker build to minimize image size.
+
+1.  **Build the image**
+
+<!-- end list -->
+
+```bash
+docker build -t go-game-backend:latest .
+```
+
+2.  **Run the container**
+
+<!-- end list -->
+
+```bash
+docker run -d \
+  --name game-backend \
+  -p 8080:8080 \
+  --env-file .env \
+  go-game-backend:latest
+```
+
+## ⚙️ Configuration
+
+### config.yml
+
+```yaml
+port: "8080"              # HTTP server port
+
+db:
+  username: "postgres"    # PostgreSQL username
+  host: "localhost"       # PostgreSQL host
+  port: "5432"           # PostgreSQL port
+  database: "postgres"    # Database name
+  sslmode: "disable"     # SSL mode
+
+redis:
+  addr: "localhost:6379" # Redis address
+  db: 0                  # Redis database number
+```
+
+### Environment Variables (.env)
+
+```env
+DB_PASSWORD=          # PostgreSQL password
+REDIS_PASSWORD=       # Redis password (if set)
+JWT_SECRET=           # Secret key for JWT
+```
+
+## 📝 Development Stages
+
+### ✅ Completed
+
+1.  **Environment Setup** - Installing Go, setting up the workspace, project initialization.
+2.  **Architecture Design** - Defining project structure, modules, and database schema.
+3.  **User API Implementation** - Developing endpoints for registration, authorization, and profile management.
+4.  **Database Integration** - Configuring connections to PostgreSQL and Redis, implementing models and repositories.
+5.  **Clan System** - Implementing the basic clan structure with roles.
+
+### 🔄 In Progress
+
+6.  **Core Game Logic Development** - Creating mechanisms for world and character generation, and simulating their life.
+7.  **Gameplay API Creation** - Developing endpoints for interacting with the game world.
+
+### 📋 Planned
+
+8.  **n8n Integration** - Setting up interaction for image generation.
+9.  **Payment Systems Integration** - Connecting payment gateways.
+10. **Testing** - Writing unit and integration tests to verify the correctness of the API and game logic.
+11. **Performance Optimization** - Profiling and optimizing bottlenecks.
+12. **Deployment** - Preparing for deployment to the production server.
+
+-----
+
+## 📚 Additional Documentation
+
+  - [DEVELOPMENT\_PLAN.md](https://www.google.com/search?q=./DEVELOPMENT_PLAN.md) - Detailed development plan and roadmap.
+  - [API Documentation](https://www.google.com/search?q=./docs/API.md) - API endpoints documentation (in development).
+
+## 🤝 Contribution
+
+The project is under active development. When making changes, please follow the established architecture and design patterns.
