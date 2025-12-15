@@ -1,3 +1,5 @@
+[На русском](./README.ru.md)
+
 # "Choose Me" Game Concept
 
 ## 1. Overall Game Vision

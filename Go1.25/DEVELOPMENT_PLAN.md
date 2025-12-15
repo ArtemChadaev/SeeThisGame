@@ -1,3 +1,5 @@
+[На русском](./DEVELOPMENT_PLAN.ru.md)
+
 # Backend Development Plan (Go 1.25)
 
 ## 📊 Current Project State

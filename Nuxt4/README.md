@@ -1,3 +1,5 @@
+[На русском](./README.ru.md)
+
 # Go 1.25 Backend Development
 
 ## 📋 Table of Contents

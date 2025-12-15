@@ -1,3 +1,5 @@
+[На русском](./README.ru.md)
+
 # Backend Development with Go 1.25
 
 ## 📋 Table of Contents

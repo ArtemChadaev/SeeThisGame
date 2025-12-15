@@ -1,3 +1,5 @@
+[На русском](./DEVELOPMENT_PLAN.ru.md)
+
 # "Choose Me" Game Development Plan - Frontend
 
 ## Project Overview
