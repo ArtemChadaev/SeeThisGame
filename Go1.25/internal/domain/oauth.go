@@ -1,4 +1,4 @@
-package rest
+package domain
 
 // OAuthProvider represents supported OAuth providers
 type OAuthProvider string

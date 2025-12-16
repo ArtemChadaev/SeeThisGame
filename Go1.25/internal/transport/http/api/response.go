@@ -1,11 +1,11 @@
-package handler
+package api
 
 import (
 	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -18,7 +18,7 @@ type OauthError struct {
 
 // handleError обрабатывает любую ошибку, пришедшую из слоев ниже.
 func handleError(c *gin.Context, err error) {
-	var appErr *rest.AppError
+	var appErr *domain.rest
 
 	// Проверяем, является ли ошибка нашей кастомной AppError.
 	if errors.As(err, &appErr) {

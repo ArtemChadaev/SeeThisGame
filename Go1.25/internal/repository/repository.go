@@ -3,37 +3,37 @@ package repository
 import (
 	"time"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
 	"github.com/jmoiron/sqlx"
 )
 
 type Autorization interface {
 	// User Management
-	CreateUser(user rest.User) (int, error)
+	CreateUser(user domain.rest) (int, error)
 	GetUser(username, password string) (int, error)
 	GetUserEmailFromId(id int) (string, error)
-	UpdateUserPassword(user rest.User) error
+	UpdateUserPassword(user domain.rest) error
 
 	// Token Management
 	GetUserIdByRefreshToken(refreshToken string) (int, error)
-	CreateToken(refreshToken rest.RefreshToken) error
-	GetRefreshToken(refreshToken string) (rest.RefreshToken, error)
-	UpdateToken(oldRefreshToken string, refreshToken rest.RefreshToken) error
+	CreateToken(refreshToken domain.rest) error
+	GetRefreshToken(refreshToken string) (domain.rest, error)
+	UpdateToken(oldRefreshToken string, refreshToken domain.rest) error
 	DeleteRefreshToken(tokenId int) error
 	DeleteAllUserRefreshTokens(userId int) error
-	GetRefreshTokens(userId int) ([]rest.RefreshToken, error)
+	GetRefreshTokens(userId int) ([]domain.rest, error)
 
 	// OAuth Management
-	CreateOAuthUser(user rest.User) (int, error)
-	GetUserByOAuth(provider, oauthID string) (rest.User, error)
-	GetUserByEmail(email string) (rest.User, error)
+	CreateOAuthUser(user domain.rest) (int, error)
+	GetUserByOAuth(provider, oauthID string) (domain.rest, error)
+	GetUserByEmail(email string) (domain.rest, error)
 }
 
 type UserSettings interface {
 	// Profile Management
-	CreateUserSettings(settings rest.UserSettings) error
-	GetUserSettings(userId int) (rest.UserSettings, error)
-	UpdateUserSettings(settings rest.UserSettings) error
+	CreateUserSettings(settings domain.rest) error
+	GetUserSettings(userId int) (domain.rest, error)
+	UpdateUserSettings(settings domain.rest) error
 
 	// Economy
 	UpdateUserCoin(userId int, coin int) error

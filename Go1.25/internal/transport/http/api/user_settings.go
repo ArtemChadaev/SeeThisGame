@@ -1,11 +1,13 @@
-package handler
+package api
 
 import (
 	"errors"
 	"net/http"
 	"path/filepath"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	http2 "github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -13,21 +15,21 @@ import (
 // getUserID извлекает ID пользователя из контекста.
 // Это вспомогательная функция, чтобы не дублировать код в каждом обработчике.
 func getUserID(c *gin.Context) (int, error) {
-	id, ok := c.Get(userCtx)
+	id, ok := c.Get(middleware.userCtx)
 	if !ok {
-		return 0, rest.ErrInvalidToken
+		return 0, domain.rest.ErrInvalidToken
 	}
 
 	idInt, ok := id.(int)
 	if !ok {
-		return 0, rest.ErrInvalidToken
+		return 0, domain.rest.ErrInvalidToken
 	}
 
 	return idInt, nil
 }
 
 // getMySettings — пример обработчика для получения настроек текущего пользователя.
-func (h *Handler) getMySettings(c *gin.Context) {
+func (h *http2.Handler) getMySettings(c *gin.Context) {
 	// 1. Получаем ID пользователя из контекста с помощью нашей вспомогательной функции
 	userId, err := getUserID(c)
 	if err != nil {
@@ -47,7 +49,7 @@ func (h *Handler) getMySettings(c *gin.Context) {
 }
 
 // setNameIcon Обновление имени и фота профиля
-func (h *Handler) setNameIcon(c *gin.Context) {
+func (h *http2.Handler) setNameIcon(c *gin.Context) {
 	userId, err := getUserID(c)
 	if err != nil {
 		handleError(c, err)
@@ -58,7 +60,7 @@ func (h *Handler) setNameIcon(c *gin.Context) {
 	// c.PostForm() извлечет значение поля "name" из multipart-формы
 	newName := c.PostForm("name")
 	if newName == "" {
-		handleError(c, &rest.AppError{
+		handleError(c, &domain.rest{
 			HTTPStatus: http.StatusBadRequest,
 			Code:       "bad_request",
 			Message:    "Поле 'name' не может быть пустым.",
@@ -81,14 +83,14 @@ func (h *Handler) setNameIcon(c *gin.Context) {
 		// Сохраняем файл
 		savePath := filepath.Join("static", "icons", uniqueFilename)
 		if err := c.SaveUploadedFile(file, savePath); err != nil {
-			handleError(c, rest.ErrFailedSaveImg)
+			handleError(c, domain.rest.ErrFailedSaveImg)
 			return
 		}
 		// Формируем URL для сохранения в БД
 		iconUrl = "/static/icons/" + uniqueFilename
 	} else if errors.Is(err, http.ErrMissingFile) {
 		// Если ошибка - это НЕ "файл отсутствует", значит произошла другая проблема.
-		handleError(c, rest.NewInternalServerError(err))
+		handleError(c, domain.rest.NewInternalServerError(err))
 		return
 	}
 
@@ -105,7 +107,7 @@ func (h *Handler) setNameIcon(c *gin.Context) {
 }
 
 // dayCoin Получить n монеток
-func (h *Handler) dayCoin(c *gin.Context) {
+func (h *http2.Handler) dayCoin(c *gin.Context) {
 	userId, err := getUserID(c)
 	if err != nil {
 		handleError(c, err)

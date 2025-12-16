@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/ArtemChadaev/SeeThisGame"
-	"github.com/ArtemChadaev/SeeThisGame/pkg/handler"
-	"github.com/ArtemChadaev/SeeThisGame/pkg/repository"
-	"github.com/ArtemChadaev/SeeThisGame/pkg/service"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	repository2 "github.com/ArtemChadaev/SeeThisGame/internal/repository"
+	"github.com/ArtemChadaev/SeeThisGame/internal/service"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logrus.Fatalf("%s", err.Error())
 	}
-	db, err := repository.NewPostgresDB(repository.PostgresConfig{
+	db, err := repository2.NewPostgresDB(repository2.PostgresConfig{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
 		Username: viper.GetString("db.username"),
@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("%s", err.Error())
 	}
-	redis, err := repository.NewRedisClient(repository.RedisConfig{
+	redis, err := repository2.NewRedisClient(repository2.RedisConfig{
 		Addr:     viper.GetString("redis.addr"),
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       viper.GetInt("redis.db"),
@@ -41,11 +41,11 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("%s", err.Error())
 	}
-	repos := repository.NewRepository(db)
+	repos := repository2.NewRepository(db)
 	services := service.NewService(repos, redis)
-	handlers := handler.NewHandler(services, redis)
+	handlers := http.NewHandler(services, redis)
 
-	srv := new(rest.Server)
+	srv := new(domain.rest)
 	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
 		logrus.Fatalf("error http: %s", err.Error())
 	}

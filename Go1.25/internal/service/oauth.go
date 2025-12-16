@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ArtemChadaev/SeeThisGame"
-	"github.com/ArtemChadaev/SeeThisGame/pkg/repository"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	"github.com/ArtemChadaev/SeeThisGame/internal/repository"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -57,11 +57,11 @@ func (s *OAuthService) GetAuthURL(provider string) (string, error) {
 
 	// Generate state token (in production should be random and stored in session/cookie)
 	// For simplicity we use a static state, but this should be improved
-	state := "random-state-string" 
+	state := "random-state-string"
 	return config.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
 }
 
-func (s *OAuthService) HandleCallback(provider, code string) (rest.ResponseTokens, error) {
+func (s *OAuthService) HandleCallback(provider, code string) (domain.rest, error) {
 	var config *oauth2.Config
 	switch provider {
 	case "google":
@@ -69,23 +69,23 @@ func (s *OAuthService) HandleCallback(provider, code string) (rest.ResponseToken
 	case "github":
 		config = s.githubConfig
 	default:
-		return rest.ResponseTokens{}, errors.New("unsupported provider")
+		return domain.rest{}, errors.New("unsupported provider")
 	}
 
 	token, err := config.Exchange(context.Background(), code)
 	if err != nil {
-		return rest.ResponseTokens{}, err
+		return domain.rest{}, err
 	}
 
 	userInfo, err := s.getUserInfo(provider, token)
 	if err != nil {
-		return rest.ResponseTokens{}, err
+		return domain.rest{}, err
 	}
 
 	return s.authenticateOAuthUser(provider, userInfo)
 }
 
-func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (rest.OAuthUserInfo, error) {
+func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (domain.rest, error) {
 	var userInfoURL string
 	switch provider {
 	case "google":
@@ -97,23 +97,23 @@ func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (rest.O
 	client := http.Client{}
 	req, err := http.NewRequest("GET", userInfoURL, nil)
 	if err != nil {
-		return rest.OAuthUserInfo{}, err
+		return domain.rest{}, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
 	resp, err := client.Do(req)
 	if err != nil {
-		return rest.OAuthUserInfo{}, err
+		return domain.rest{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return rest.OAuthUserInfo{}, err
+		return domain.rest{}, err
 	}
 
-	var oauthUser rest.OAuthUserInfo
-	oauthUser.Provider = rest.OAuthProvider(provider)
+	var oauthUser domain.rest
+	oauthUser.Provider = domain.rest.OAuthProvider(provider)
 
 	if provider == "google" {
 		var googleUser struct {
@@ -123,7 +123,7 @@ func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (rest.O
 			Picture string `json:"picture"`
 		}
 		if err := json.Unmarshal(body, &googleUser); err != nil {
-			return rest.OAuthUserInfo{}, err
+			return domain.rest{}, err
 		}
 		oauthUser.ID = googleUser.ID
 		oauthUser.Email = googleUser.Email
@@ -138,7 +138,7 @@ func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (rest.O
 			Email     string `json:"email"` // Might be empty if private
 		}
 		if err := json.Unmarshal(body, &githubUser); err != nil {
-			return rest.OAuthUserInfo{}, err
+			return domain.rest{}, err
 		}
 		oauthUser.ID = fmt.Sprintf("%d", githubUser.ID)
 		oauthUser.Name = githubUser.Name
@@ -193,7 +193,7 @@ func (s *OAuthService) getGitHubEmail(accessToken string) (string, error) {
 	return "", errors.New("no email found")
 }
 
-func (s *OAuthService) authenticateOAuthUser(provider string, userInfo rest.OAuthUserInfo) (rest.ResponseTokens, error) {
+func (s *OAuthService) authenticateOAuthUser(provider string, userInfo domain.rest) (domain.rest, error) {
 	// 1. Try to find user by OAuth ID
 	user, err := s.repo.GetUserByOAuth(provider, userInfo.ID)
 	if err == nil {
@@ -217,7 +217,7 @@ func (s *OAuthService) authenticateOAuthUser(provider string, userInfo rest.OAut
 	// 3. Create new user
 	providerStr := provider
 	oauthIDStr := userInfo.ID
-	newUser := rest.User{
+	newUser := domain.rest{
 		Email:         userInfo.Email,
 		Password:      "", // No password for OAuth
 		OAuthProvider: &providerStr,
@@ -226,7 +226,7 @@ func (s *OAuthService) authenticateOAuthUser(provider string, userInfo rest.OAut
 
 	id, err := s.repo.CreateOAuthUser(newUser)
 	if err != nil {
-		return rest.ResponseTokens{}, err
+		return domain.rest{}, err
 	}
 
 	// Create initial settings

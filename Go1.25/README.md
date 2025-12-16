@@ -1,67 +1,46 @@
-[На русском](./README.ru.md)
+# Backend на Go
 
-# Backend Development with Go 1.25
+## Описание
 
-## 📋 Table of Contents
+Серверная часть приложения которая так же отвечает за связь между ИИ (n8n) и пользователем
 
-- [Project Goal](#project-goal)
-- [Key Features](#key-features)
-- [Technology Stack](#technology-stack)
-- [Project Architecture](#project-architecture)
-- [Project Structure](#project-structure)
-- [Database](#database)
-- [Installation and Setup](#installation-and-setup)
-- [Configuration](#configuration)
-- [Development Stages](#development-stages)
+### Основные документы
 
-## 🎯 Project Goal
+- [План на разработку](./docs/DEVELOPEMENT_PLAN.md)
+- [Основные API с json](./docs/API.md)
+- [Архитектура и структура проекта](./docs/STRUCT.md)
 
-Creating a high-performance and scalable server application to handle all game logic, database interactions, and provide API for the "Choose Me" game client.
+## 🛠 Технологический стек
 
-## 🚀 Key Features
+### Основные технологии
 
-- **Client API:** Providing RESTful API for all client requests (registration, world data retrieval, player actions)
-- **User Management:** Logic for registration, authorization, session management with multi-device support
-- **Clan System:** Full-featured clan system with roles and custom names
-- **Game Logic:**
-  - Generation and management of game world state
-  - Procedural character generation (based on JSON tags)
-  - Processing game events and player actions
-  - Calculation of decay mechanics, leveling, NPC interactions
-- **n8n Integration:** Interaction with n8n service to trigger image generation workflows
-- **Payment Processing:** Integration with payment gateways
+| Технология | Версия | Назначение |
+|------------|--------|------------|
+| **Go** | 1.25.1 | Основной язык программирования |
+| **Gin** | 1.10.1 | Веб-фреймворк для создания RESTful API |
+| **PostgreSQL** | 15     | Основная реляционная база данных |
+| **Redis** | 9.14.0 | In-memory БД для кэширования и сессий |
+| **Docker** | -      | Контейнеризация приложения |
 
-## 🛠 Technology Stack
+### Библиотеки и зависимости
 
-### Core Technologies
+#### Работа с базами данных
+- **sqlx** (1.4.0) - Расширение для database/sql с удобными методами
+- **lib/pq** (1.10.9) - PostgreSQL драйвер
+- **go-redis** (9.14.0) - Клиент для Redis
 
-| Technology     | Version | Purpose                             |
-| -------------- | ------- | ----------------------------------- |
-| **Go**         | 1.25.1  | Main programming language           |
-| **Gin**        | 1.10.1  | Web framework for creating RESTful API |
-| **PostgreSQL** | -       | Main relational database            |
-| **Redis**      | 9.14.0  | In-memory DB for caching and sessions |
-| **Docker**     | -       | Application containerization        |
+#### Аутентификация и безопасность
+- **jwt/v5** (5.3.0) - JSON Web Tokens для аутентификации
+- **uuid** (1.6.0) - Генерация уникальных идентификаторов
 
-### Libraries and Dependencies
+#### Конфигурация и логирование
+- **Viper** (1.21.0) - Управление конфигурацией приложения
+- **Logrus** (1.9.3) - Структурированное логирование
+- **godotenv** (1.5.1) - Загрузка переменных окружения из .env файла
 
-#### Database Operations
-- **sqlx** (1.4.0) - Extension for database/sql with convenient methods
-- **lib/pq** (1.10.9) - PostgreSQL driver
-- **go-redis** (9.14.0) - Redis client
+## 🏗 Архитектура проекта
 
-#### Authentication and Security
-- **jwt/v5** (5.3.0) - JSON Web Tokens for authentication
-- **uuid** (1.6.0) - Unique identifier generation
-
-#### Configuration and Logging
-- **Viper** (1.21.0) - Application configuration management
-- **Logrus** (1.9.3) - Structured logging
-- **godotenv** (1.5.1) - Loading environment variables from .env file
-
-## 🏗 Project Architecture
-
-The project is built on **Clean Architecture** principles with separation into three main layers:
+Проект построен на принципах **Clean Architecture** с разделением на три основных слоя:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -100,129 +79,211 @@ The project is built on **Clean Architecture** principles with separation into t
   └──────────┘        └──────────┘
 ```
 
-### Design Patterns
+### Паттерны проектирования
 
-- **Repository Pattern** - Data access abstraction
-- **Dependency Injection** - Dependency injection through constructors
-- **Middleware Pattern** - Request processing through middleware chain
-- **Clean Architecture** - Separation into independent layers
+- **Repository Pattern** - Абстракция работы с данными
+- **Dependency Injection** - Внедрение зависимостей через конструкторы
+- **Middleware Pattern** - Обработка запросов через цепочку middleware
+- **Clean Architecture** - Разделение на независимые слои
 
-## 📁 Project Structure
+## 📁 Структура проекта
 
 ```
 Go1.25/
 ├── cmd/
-│   └── main.go                      # Application entry point
+│   └── main.go                      # Точка входа приложения
 │
-├── pkg/                             # Main application code
+├── pkg/                             # Основной код приложения
 │   ├── handler/                     # HTTP handlers (Gin routes)
-│   │   ├── handler.go              # Route initialization
-│   │   ├── auth.go                 # Authentication (login, register)
-│   │   ├── user_settings.go        # User settings
+│   │   ├── handler.go              # Инициализация роутов
+│   │   ├── auth.go                 # Аутентификация (login, register)
+│   │   ├── user_settings.go        # Настройки пользователя
 │   │   ├── middleware.go           # JWT middleware, CORS
-│   │   └── response.go             # Standardized responses
+│   │   └── response.go             # Стандартизированные ответы
 │   │
-│   ├── service/                     # Business logic
-│   │   ├── service.go              # Service initialization
-│   │   ├── auth.go                 # Authentication logic
-│   │   └── user_settings.go        # User settings logic
+│   ├── service/                     # Бизнес-логика
+│   │   ├── service.go              # Инициализация сервисов
+│   │   ├── auth.go                 # Логика аутентификации
+│   │   └── user_settings.go        # Логика настроек пользователя
 │   │
-│   └── repository/                  # Database operations
-│       ├── repository.go           # Repository initialization
-│       ├── postgres.go             # PostgreSQL connection
-│       ├── redis.go                # Redis connection
-│       ├── auth_postgres.go        # Authentication repository
-│       └── user_setting_postgres.go # Settings repository
+│   └── repository/                  # Работа с базами данных
+│       ├── repository.go           # Инициализация репозиториев
+│       ├── postgres.go             # Подключение к PostgreSQL
+│       ├── redis.go                # Подключение к Redis
+│       ├── auth_postgres.go        # Репозиторий аутентификации
+│       └── user_setting_postgres.go # Репозиторий настроек
 │
 ├── configs/
-│   └── config.yml                   # Application configuration
+│   └── config.yml                   # Конфигурация приложения
 │
-├── migrate/                         # Database migrations
-│   ├── 000001_init.up.sql          # Table creation
-│   └── 000001_init.down.sql        # Migration rollback
+├── migrate/                         # Миграции базы данных
+│   ├── 000001_init.up.sql          # Создание таблиц
+│   └── 000001_init.down.sql        # Откат миграций
 │
 ├── Dockerfile                       # Multi-stage Docker build
-├── .env                            # Environment variables (not in git)
+├── .env                            # Переменные окружения (не в git)
 ├── .gitignore
-├── go.mod                          # Project dependencies
-├── go.sum                          # Dependency checksums
-├── server.go                       # HTTP server
-├── user.go                         # User model
-├── errors.go                       # Custom errors
+├── go.mod                          # Зависимости проекта
+├── go.sum                          # Контрольные суммы зависимостей
+├── server.go                       # HTTP сервер
+├── user.go                         # Модель пользователя
+├── errors.go                       # Кастомные ошибки
 └── README.md
 ```
 
-## Database
+## 🗄 База данных
 
-### [PostgreSQL](SCHEME_POSTRESQL.md)
+### Схема PostgreSQL
+
+#### Основные таблицы
+
+**users** - Пользователи системы
+```sql
+- id (SERIAL PRIMARY KEY)
+- email (VARCHAR UNIQUE)
+- password_hash (VARCHAR)
+```
+
+**user_refresh_tokens** - Токены обновления для разных устройств
+```sql
+- id (SERIAL PRIMARY KEY)
+- user_id (INT FK → users)
+- token (VARCHAR UNIQUE)
+- expires_at (TIMESTAMPTZ)
+- name_device (VARCHAR)
+- device_info (VARCHAR)
+```
+
+**user_settings** - Настройки и профиль пользователя
+```sql
+- user_id (INT PRIMARY KEY FK → users)
+- name (VARCHAR)
+- icon (VARCHAR)
+- coin (INT)
+- date_of_registration (TIMESTAMPTZ)
+- paid_subscription (BOOLEAN)
+- date_of_paid_subscription (TIMESTAMPTZ)
+```
+
+#### Система кланов
+
+**clan** - Кланы
+```sql
+- id (SERIAL PRIMARY KEY)
+- name (VARCHAR UNIQUE)
+- description (TEXT)
+- other (JSONB)
+```
+
+**roles** - Системные роли (1-5, где 1 - самая высокая)
+```sql
+- id (SMALLINT PRIMARY KEY)
+- name (VARCHAR)
+```
+
+**clan_members** - Участники кланов
+```sql
+- clan_id (INT FK → clan)
+- user_id (INT FK → users)
+- role_id (SMALLINT FK → roles)
+- PRIMARY KEY (clan_id, user_id)
+```
+
+**clan_role_names** - Кастомные названия ролей для каждого клана
+```sql
+- clan_id (INT FK → clan)
+- role_id (SMALLINT FK → roles)
+- custom_name (VARCHAR)
+- PRIMARY KEY (clan_id, role_id)
+```
+
+#### Игровые сущности
+
+**cards** - Карточки персонажей
+```sql
+- id (SERIAL PRIMARY KEY)
+- user_id (INT FK → users)
+- name (VARCHAR)
+- description (TEXT)
+- other (JSONB)
+```
+
+**items** - Игровые предметы
+```sql
+- id (SERIAL PRIMARY KEY)
+- name (VARCHAR)
+- description (TEXT)
+- HaveCard (BOOLEAN)
+- other (JSONB)
+```
 
 ### Redis
 
-Used for:
-- **Caching** - Frequently requested data
-- **Sessions** - JWT tokens and refresh tokens
-- **Rate limiting** - Request frequency limiting
+Используется для:
+- **Кэширование** - Часто запрашиваемые данные
+- **Сессии** - JWT токены и refresh tokens
+- **Rate limiting** - Ограничение частоты запросов
 
-## 🚀 Installation and Setup
+## 🚀 Установка и запуск
 
-### Prerequisites
+### Предварительные требования
 
-- Go 1.25.1 or higher
+- Go 1.25.1 или выше
 - PostgreSQL 14+
 - Redis 7+
-- Docker and Docker Compose
+- Docker и Docker Compose (опционально)
 
-### Local Development
+### Локальная разработка
 
-1. **Clone repository**
+1. **Клонирование репозитория**
 ```bash
 git clone <repository-url>
 cd Go1.25
 ```
 
-2. **Install dependencies**
+2. **Установка зависимостей**
 ```bash
 go mod download
 ```
 
-3. **Configure environment variables**
+3. **Настройка переменных окружения**
 
-Create `.env` file in project root:
+Создайте файл `.env` в корне проекта:
 ```env
 DB_PASSWORD=your_postgres_password
 REDIS_PASSWORD=your_redis_password
 JWT_SECRET=your_jwt_secret_key
 ```
 
-4. **Start PostgreSQL and Redis**
+4. **Запуск PostgreSQL и Redis**
 ```bash
-# Using Docker Compose (recommended)
+# Используя Docker Compose (рекомендуется)
 docker-compose up -d postgres redis
 ```
 
-5. **Apply migrations**
+5. **Применение миграций**
 ```bash
-# Use migrate CLI or execute SQL manually
+# Используйте migrate CLI или выполните SQL вручную
 psql -U postgres -d postgres -f migrate/000001_init.up.sql
 ```
 
-6. **Run application**
+6. **Запуск приложения**
 ```bash
 go run cmd/main.go
 ```
 
-Server will start on `http://localhost:8080`
+Сервер запустится на `http://localhost:8080`
 
 ### Docker Deployment
 
-The project uses multi-stage Docker build to minimize image size.
+Проект использует multi-stage Docker build для минимизации размера образа.
 
-1. **Build image**
+1. **Сборка образа**
 ```bash
 docker build -t go-game-backend:latest .
 ```
 
-2. **Run container**
+2. **Запуск контейнера**
 ```bash
 docker run -d \
   --name game-backend \
@@ -231,67 +292,63 @@ docker run -d \
   go-game-backend:latest
 ```
 
-## ⚙️ Configuration
+## ⚙️ Конфигурация
 
 ### config.yml
 
 ```yaml
-port: "8080"              # HTTP server port
+port: "8080"              # Порт HTTP сервера
 
 db:
-  username: "postgres"    # PostgreSQL user
-  host: "localhost"       # PostgreSQL host
-  port: "5432"           # PostgreSQL port
-  database: "postgres"    # Database name
-  sslmode: "disable"     # SSL mode
+  username: "postgres"    # Пользователь PostgreSQL
+  host: "localhost"       # Хост PostgreSQL
+  port: "5432"           # Порт PostgreSQL
+  database: "postgres"    # Имя базы данных
+  sslmode: "disable"     # SSL режим
 
 redis:
-  addr: "localhost:6379" # Redis address
-  db: 0                  # Redis database number
+  addr: "localhost:6379" # Адрес Redis
+  db: 0                  # Номер базы данных Redis
 ```
 
-### Environment Variables (.env)
+### Переменные окружения (.env)
 
 ```env
-DB_PASSWORD=          # PostgreSQL password
-REDIS_PASSWORD=       # Redis password (if set)
-JWT_SECRET=           # Secret key for JWT
+DB_PASSWORD=          # Пароль PostgreSQL
+REDIS_PASSWORD=       # Пароль Redis (если установлен)
+JWT_SECRET=           # Секретный ключ для JWT
 ```
 
-## 📝 Development Stages
+## 📝 Этапы разработки
 
-### ✅ Completed
+### ✅ Завершено
 
-1. **Environment Setup** - Go installation, workspace setup, project initialization
-2. **Architecture Design** - Project structure definition, modules and database schema
-3. **User API Implementation** - Endpoint development for registration, authorization and profile management
-4. **Database Integration** - PostgreSQL and Redis connection setup, models and repositories implementation
-5. **Clan System** - Basic clan structure implementation with roles
+1. **Настройка окружения** - Установка Go, настройка рабочего пространства, инициализация проекта
+2. **Проектирование архитектуры** - Определение структуры проекта, модулей и схемы базы данных
+3. **Реализация API для пользователей** - Разработка эндпоинтов для регистрации, авторизации и управления профилем
+4. **Интеграция с базами данных** - Настройка подключения к PostgreSQL и Redis, реализация моделей и репозиториев
+5. **Система кланов** - Реализация базовой структуры кланов с ролями
 
-### 🔄 In Progress
+### 🔄 В процессе
 
-6. **Game Logic Core Development** - Creating world and character generation mechanisms, simulating their life
-7. **Game Process API Creation** - Developing endpoints for game world interaction
+6. **Разработка ядра игровой логики** - Создание механизмов генерации мира и персонажей, симуляция их жизни
+7. **Создание API для игрового процесса** - Разработка эндпоинтов для взаимодействия с игровым миром
 
-### 📋 Planned
+### 📋 Запланировано
 
-8. **n8n Integration** - Setting up interaction for image generation
-9. **Payment System Integration** - Connecting payment gateways
-10. **Testing** - Writing unit and integration tests to verify API and game logic correctness
-11. **Performance Optimization** - Profiling and optimizing bottlenecks
-12. **Deployment** - Preparing for production server deployment
+8. **Интеграция с n8n** - Настройка взаимодействия для генерации изображений
+9. **Интеграция с платежными системами** - Подключение платежных шлюзов
+10. **Тестирование** - Написание unit- и интеграционных тестов для проверки корректности работы API и игровой логики
+11. **Оптимизация производительности** - Профилирование и оптимизация узких мест
+12. **Развертывание (Deploy)** - Подготовка к развертыванию на production сервере
 
 ---
 
-## 📚 Additional Documentation
+## 📚 Дополнительная документация
 
-- [DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md) - Detailed development plan and roadmap
-- [API Documentation](./docs/API.md) - API endpoints documentation (in development)
+- [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) - Детальный план разработки и roadmap
+- [API Documentation](./docs/API.md) - Документация API endpoints (в разработке)
 
-## 🤝 Contributing
+## 🤝 Вклад в проект
 
-The project is in active development. When making changes, follow the established architecture and design patterns.
-
-## 📄 License
-
-[Specify project license]
+Проект находится в активной разработке. При внесении изменений следуйте установленной архитектуре и паттернам проектирования.

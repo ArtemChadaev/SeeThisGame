@@ -1,11 +1,13 @@
-package handler
+package middleware
 
 import (
 	"context"
 	"strings"
 	"time"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
+	"github.com/ArtemChadaev/SeeThisGame/pkg/handler"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,22 +25,22 @@ const (
 // TODO: Проверка access токена посмотреть мб переделать
 
 // Идентификация, проверка валидности токена только
-func (h *Handler) userIdentify(c *gin.Context) {
+func (h *http.Handler) userIdentify(c *gin.Context) {
 	header := c.GetHeader(autorizationHeader)
 	if header == "" {
-		handleError(c, rest.ErrInvalidToken)
+		handler.handleError(c, domain.rest.ErrInvalidToken)
 		return
 	}
 
 	headerParts := strings.Split(header, " ")
 	if len(headerParts) != 2 {
-		handleError(c, rest.ErrInvalidToken)
+		handler.handleError(c, domain.rest.ErrInvalidToken)
 		return
 	}
 
 	userId, err := h.services.ParseToken(headerParts[1])
 	if err != nil {
-		handleError(c, err) // Сервис уже вернет правильный rest.ErrInvalidToken
+		handler.handleError(c, err) // Сервис уже вернет правильный rest.ErrInvalidToken
 		return
 	}
 
@@ -46,7 +48,7 @@ func (h *Handler) userIdentify(c *gin.Context) {
 }
 
 // rateLimiter - это middleware для ограничения частоты запросов по access токену
-func (h *Handler) rateLimiter(c *gin.Context) {
+func (h *http.Handler) rateLimiter(c *gin.Context) {
 	// 1. Извлекаем токен
 	header := c.GetHeader(autorizationHeader)
 	if header == "" {
@@ -82,7 +84,7 @@ func (h *Handler) rateLimiter(c *gin.Context) {
 
 	// 4. Проверяем лимит
 	if count > rateLimitPerMinute {
-		handleError(c, rest.ErrTooManyRequestsByAccessToken)
+		handler.handleError(c, domain.rest.ErrTooManyRequestsByAccessToken)
 		c.Abort() // Важно остановить дальнейшую обработку
 		return
 	}
@@ -91,7 +93,7 @@ func (h *Handler) rateLimiter(c *gin.Context) {
 }
 
 // authRateLimiter - это middleware для ограничения частоты запросов к эндпоинтам /auth по IP-адресу
-func (h *Handler) authRateLimiter(c *gin.Context) {
+func (h *http.Handler) authRateLimiter(c *gin.Context) {
 	// 1. В качестве идентификатора используем IP-адрес клиента
 	ip := c.ClientIP()
 	key := "rate_limit_auth:" + ip
@@ -114,7 +116,7 @@ func (h *Handler) authRateLimiter(c *gin.Context) {
 
 	// 3. Проверяем лимит
 	if count > authRateLimitPerMinute {
-		handleError(c, rest.ErrTooManyRequestsByIp)
+		handler.handleError(c, domain.rest.ErrTooManyRequestsByIp)
 		c.Abort()
 		return
 	}

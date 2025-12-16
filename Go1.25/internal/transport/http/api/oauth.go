@@ -1,16 +1,17 @@
-package handler
+package api
 
 import (
 	"net/http"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	http2 "github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) initiateOAuth(c *gin.Context) {
+func (h *http2.Handler) initiateOAuth(c *gin.Context) {
 	provider := c.Param("provider")
 	if provider != "google" && provider != "github" {
-		handleError(c, rest.NewInvalidRequestError(nil))
+		handleError(c, domain.rest.NewInvalidRequestError(nil))
 		return
 	}
 
@@ -23,16 +24,16 @@ func (h *Handler) initiateOAuth(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func (h *Handler) oauthCallback(c *gin.Context) {
+func (h *http2.Handler) oauthCallback(c *gin.Context) {
 	provider := c.Param("provider")
 	if provider != "google" && provider != "github" {
-		handleError(c, rest.NewInvalidRequestError(nil))
+		handleError(c, domain.rest.NewInvalidRequestError(nil))
 		return
 	}
 
-	var input rest.OAuthCallbackRequest
+	var input domain.rest
 	if err := c.BindQuery(&input); err != nil {
-		handleError(c, rest.NewInvalidRequestError(err))
+		handleError(c, domain.rest.NewInvalidRequestError(err))
 		return
 	}
 

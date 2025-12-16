@@ -6,7 +6,7 @@
 - **Type**: alpine
 - **Port**: 5432
 
-New tables are populated in [migrate](./migrate)
+New tables are populated in [migrate](../migrate)
 
 # PostgreSQL Schemas
 
@@ -94,7 +94,7 @@ New tables are populated in [migrate](./migrate)
 
 ## Entities for Creating/Using AI in n8n
 
-**prompt_histories** - Description of history/event sent to n8n (JSON sent in [Response: n8n → Backend Callback](../n8n/README.md))
+**prompt_histories** - Description of history/event sent to n8n (JSON sent in [Response: n8n → Backend Callback](../../n8n/README.md))
 ```sql
 - id (SERIAL PRIMARY KEY)
 - prompt (TEXT NOT NULL)
@@ -114,7 +114,7 @@ New tables are populated in [migrate](./migrate)
 - generated (VARCHAR)
 ```
 
-**history** - Returned history, JSON: [Response: n8n → Backend Callback](../n8n/README.md)
+**history** - Returned history, JSON: [Response: n8n → Backend Callback](../../n8n/README.md)
 ```sql
 - id (INT UNIQUE FK → prompt_histories)
 - data (JSONB NOT NULL)

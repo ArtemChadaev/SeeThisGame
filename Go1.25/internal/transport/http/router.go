@@ -1,7 +1,7 @@
-package handler
+package http
 
 import (
-	"github.com/ArtemChadaev/SeeThisGame/pkg/service"
+	"github.com/ArtemChadaev/SeeThisGame/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )

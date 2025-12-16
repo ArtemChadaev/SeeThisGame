@@ -1,17 +1,18 @@
-package handler
+package api
 
 import (
 	"net/http"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	http2 "github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) signUp(c *gin.Context) {
-	var input rest.User
+func (h *http2.Handler) signUp(c *gin.Context) {
+	var input domain.rest
 
 	if err := c.BindJSON(&input); err != nil {
-		handleError(c, rest.NewInvalidRequestError(err))
+		handleError(c, domain.rest.NewInvalidRequestError(err))
 		return
 	}
 
@@ -29,11 +30,11 @@ func (h *Handler) signUp(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-func (h *Handler) signIn(c *gin.Context) {
-	var input rest.User
+func (h *http2.Handler) signIn(c *gin.Context) {
+	var input domain.rest
 
 	if err := c.BindJSON(&input); err != nil {
-		handleError(c, rest.NewInvalidRequestError(err))
+		handleError(c, domain.rest.NewInvalidRequestError(err))
 		return
 	}
 
@@ -46,11 +47,11 @@ func (h *Handler) signIn(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-func (h *Handler) updateToken(c *gin.Context) {
-	var input rest.ResponseTokens
+func (h *http2.Handler) updateToken(c *gin.Context) {
+	var input domain.rest
 
 	if err := c.BindJSON(&input); err != nil {
-		handleError(c, rest.NewInvalidRequestError(err))
+		handleError(c, domain.rest.NewInvalidRequestError(err))
 		return
 	}
 
