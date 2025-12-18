@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
-	http2 "github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
-	"github.com/ArtemChadaev/SeeThisGame/internal/transport/http/middleware"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/rest"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/rest/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -29,7 +29,7 @@ func getUserID(c *gin.Context) (int, error) {
 }
 
 // getMySettings — пример обработчика для получения настроек текущего пользователя.
-func (h *http2.Handler) getMySettings(c *gin.Context) {
+func (h *rest.Handler) getMySettings(c *gin.Context) {
 	// 1. Получаем ID пользователя из контекста с помощью нашей вспомогательной функции
 	userId, err := getUserID(c)
 	if err != nil {
@@ -49,7 +49,7 @@ func (h *http2.Handler) getMySettings(c *gin.Context) {
 }
 
 // setNameIcon Обновление имени и фота профиля
-func (h *http2.Handler) setNameIcon(c *gin.Context) {
+func (h *rest.Handler) setNameIcon(c *gin.Context) {
 	userId, err := getUserID(c)
 	if err != nil {
 		handleError(c, err)

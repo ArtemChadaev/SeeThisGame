@@ -6,7 +6,7 @@ import (
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
 	repository2 "github.com/ArtemChadaev/SeeThisGame/internal/repository"
 	"github.com/ArtemChadaev/SeeThisGame/internal/service"
-	"github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/rest"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -43,11 +43,11 @@ func main() {
 	}
 	repos := repository2.NewRepository(db)
 	services := service.NewService(repos, redis)
-	handlers := http.NewHandler(services, redis)
+	handlers := rest.NewHandler(services, redis)
 
 	srv := new(domain.rest)
 	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error http: %s", err.Error())
+		logrus.Fatalf("error rest: %s", err.Error())
 	}
 }
 

@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
-	http2 "github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/rest"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *http2.Handler) signUp(c *gin.Context) {
+func (h *rest.Handler) signUp(c *gin.Context) {
 	var input domain.rest
 
 	if err := c.BindJSON(&input); err != nil {
@@ -30,7 +30,7 @@ func (h *http2.Handler) signUp(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-func (h *http2.Handler) signIn(c *gin.Context) {
+func (h *rest.Handler) signIn(c *gin.Context) {
 	var input domain.rest
 
 	if err := c.BindJSON(&input); err != nil {
@@ -47,7 +47,7 @@ func (h *http2.Handler) signIn(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-func (h *http2.Handler) updateToken(c *gin.Context) {
+func (h *rest.Handler) updateToken(c *gin.Context) {
 	var input domain.rest
 
 	if err := c.BindJSON(&input); err != nil {

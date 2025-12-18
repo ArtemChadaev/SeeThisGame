@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
-	http2 "github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/rest"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *http2.Handler) initiateOAuth(c *gin.Context) {
+func (h *rest.Handler) initiateOAuth(c *gin.Context) {
 	provider := c.Param("provider")
 	if provider != "google" && provider != "github" {
 		handleError(c, domain.rest.NewInvalidRequestError(nil))
@@ -24,7 +24,7 @@ func (h *http2.Handler) initiateOAuth(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func (h *http2.Handler) oauthCallback(c *gin.Context) {
+func (h *rest.Handler) oauthCallback(c *gin.Context) {
 	provider := c.Param("provider")
 	if provider != "google" && provider != "github" {
 		handleError(c, domain.rest.NewInvalidRequestError(nil))

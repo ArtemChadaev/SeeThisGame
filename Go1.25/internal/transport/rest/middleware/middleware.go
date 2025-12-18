@@ -6,8 +6,7 @@ import (
 	"time"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
-	"github.com/ArtemChadaev/SeeThisGame/internal/transport/http"
-	"github.com/ArtemChadaev/SeeThisGame/pkg/handler"
+	"github.com/ArtemChadaev/SeeThisGame/internal/transport/rest"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,7 +24,7 @@ const (
 // TODO: Проверка access токена посмотреть мб переделать
 
 // Идентификация, проверка валидности токена только
-func (h *http.Handler) userIdentify(c *gin.Context) {
+func (h *rest.Handler) userIdentify(c *gin.Context) {
 	header := c.GetHeader(autorizationHeader)
 	if header == "" {
 		handler.handleError(c, domain.rest.ErrInvalidToken)
@@ -48,7 +47,7 @@ func (h *http.Handler) userIdentify(c *gin.Context) {
 }
 
 // rateLimiter - это middleware для ограничения частоты запросов по access токену
-func (h *http.Handler) rateLimiter(c *gin.Context) {
+func (h *rest.Handler) rateLimiter(c *gin.Context) {
 	// 1. Извлекаем токен
 	header := c.GetHeader(autorizationHeader)
 	if header == "" {
@@ -93,7 +92,7 @@ func (h *http.Handler) rateLimiter(c *gin.Context) {
 }
 
 // authRateLimiter - это middleware для ограничения частоты запросов к эндпоинтам /auth по IP-адресу
-func (h *http.Handler) authRateLimiter(c *gin.Context) {
+func (h *rest.Handler) authRateLimiter(c *gin.Context) {
 	// 1. В качестве идентификатора используем IP-адрес клиента
 	ip := c.ClientIP()
 	key := "rate_limit_auth:" + ip

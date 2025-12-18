@@ -1,4 +1,4 @@
-package http
+package rest
 
 import (
 	"github.com/ArtemChadaev/SeeThisGame/internal/service"
