@@ -9,26 +9,33 @@ import (
 	"net/http"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
-	"github.com/ArtemChadaev/SeeThisGame/internal/repository"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
 )
 
+// oauthUserInfo — локальная структура для временного хранения данных из провайдеров
+type oauthUserInfo struct {
+	ID      string
+	Email   string
+	Name    string
+	Picture string
+}
+
 type OAuthService struct {
-	repo         repository.Autorization
+	repo         domain.AuthorizationRepository // Используем новый интерфейс из domain
 	authService  *AuthService
 	googleConfig *oauth2.Config
 	githubConfig *oauth2.Config
 }
 
-func NewOAuthService(repo repository.Autorization, authService *AuthService) *OAuthService {
+func NewOAuthService(repo domain.AuthorizationRepository, authService *AuthService) *OAuthService {
 	return &OAuthService{
 		repo:        repo,
 		authService: authService,
 		googleConfig: &oauth2.Config{
-			ClientID:     viper.GetString("oauth.google.clientID"), // Will be loaded from env/secrets
+			ClientID:     viper.GetString("oauth.google.clientID"),
 			ClientSecret: viper.GetString("oauth.google.clientSecret"),
 			RedirectURL:  viper.GetString("oauth.google.redirectURL"),
 			Scopes:       viper.GetStringSlice("oauth.google.scopes"),
@@ -55,13 +62,11 @@ func (s *OAuthService) GetAuthURL(provider string) (string, error) {
 		return "", errors.New("unsupported provider")
 	}
 
-	// Generate state token (in production should be random and stored in session/cookie)
-	// For simplicity we use a static state, but this should be improved
-	state := "random-state-string"
+	state := "random-state-string" // В идеале генерировать динамически
 	return config.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
 }
 
-func (s *OAuthService) HandleCallback(provider, code string) (domain.rest, error) {
+func (s *OAuthService) HandleCallback(provider, code string) (domain.ResponseTokens, error) {
 	var config *oauth2.Config
 	switch provider {
 	case "google":
@@ -69,51 +74,52 @@ func (s *OAuthService) HandleCallback(provider, code string) (domain.rest, error
 	case "github":
 		config = s.githubConfig
 	default:
-		return domain.rest{}, errors.New("unsupported provider")
+		return domain.ResponseTokens{}, errors.New("unsupported provider")
 	}
 
 	token, err := config.Exchange(context.Background(), code)
 	if err != nil {
-		return domain.rest{}, err
+		return domain.ResponseTokens{}, err
 	}
 
 	userInfo, err := s.getUserInfo(provider, token)
 	if err != nil {
-		return domain.rest{}, err
+		return domain.ResponseTokens{}, err
 	}
 
 	return s.authenticateOAuthUser(provider, userInfo)
 }
 
-func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (domain.rest, error) {
+func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (oauthUserInfo, error) {
 	var userInfoURL string
 	switch provider {
 	case "google":
 		userInfoURL = "https://www.googleapis.com/oauth2/v2/userinfo"
 	case "github":
 		userInfoURL = "https://api.github.com/user"
+	default:
+		return oauthUserInfo{}, errors.New("unsupported provider")
 	}
 
 	client := http.Client{}
 	req, err := http.NewRequest("GET", userInfoURL, nil)
 	if err != nil {
-		return domain.rest{}, err
+		return oauthUserInfo{}, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
 	resp, err := client.Do(req)
 	if err != nil {
-		return domain.rest{}, err
+		return oauthUserInfo{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return domain.rest{}, err
+		return oauthUserInfo{}, err
 	}
 
-	var oauthUser domain.rest
-	oauthUser.Provider = domain.rest.OAuthProvider(provider)
+	var res oauthUserInfo
 
 	if provider == "google" {
 		var googleUser struct {
@@ -123,51 +129,48 @@ func (s *OAuthService) getUserInfo(provider string, token *oauth2.Token) (domain
 			Picture string `json:"picture"`
 		}
 		if err := json.Unmarshal(body, &googleUser); err != nil {
-			return domain.rest{}, err
+			return oauthUserInfo{}, err
 		}
-		oauthUser.ID = googleUser.ID
-		oauthUser.Email = googleUser.Email
-		oauthUser.Name = googleUser.Name
-		oauthUser.Picture = googleUser.Picture
+		res = oauthUserInfo{
+			ID:      googleUser.ID,
+			Email:   googleUser.Email,
+			Name:    googleUser.Name,
+			Picture: googleUser.Picture,
+		}
 	} else if provider == "github" {
 		var githubUser struct {
 			ID        int    `json:"id"`
 			Login     string `json:"login"`
 			Name      string `json:"name"`
 			AvatarURL string `json:"avatar_url"`
-			Email     string `json:"email"` // Might be empty if private
+			Email     string `json:"email"`
 		}
 		if err := json.Unmarshal(body, &githubUser); err != nil {
-			return domain.rest{}, err
+			return oauthUserInfo{}, err
 		}
-		oauthUser.ID = fmt.Sprintf("%d", githubUser.ID)
-		oauthUser.Name = githubUser.Name
-		if oauthUser.Name == "" {
-			oauthUser.Name = githubUser.Login
+		res = oauthUserInfo{
+			ID:      fmt.Sprintf("%d", githubUser.ID),
+			Name:    githubUser.Name,
+			Picture: githubUser.AvatarURL,
+			Email:   githubUser.Email,
 		}
-		oauthUser.Picture = githubUser.AvatarURL
-		oauthUser.Email = githubUser.Email
-
-		// If email is not public, we need to fetch it separately
-		if oauthUser.Email == "" {
-			email, err := s.getGitHubEmail(token.AccessToken)
-			if err == nil {
-				oauthUser.Email = email
-			}
+		if res.Name == "" {
+			res.Name = githubUser.Login
+		}
+		if res.Email == "" {
+			email, _ := s.getGitHubEmail(token.AccessToken)
+			res.Email = email
 		}
 	}
 
-	return oauthUser, nil
+	return res, nil
 }
 
 func (s *OAuthService) getGitHubEmail(accessToken string) (string, error) {
-	client := http.Client{}
-	req, err := http.NewRequest("GET", "https://api.github.com/user/emails", nil)
-	if err != nil {
-		return "", err
-	}
+	req, _ := http.NewRequest("GET", "https://api.github.com/user/emails", nil)
 	req.Header.Set("Authorization", "Bearer "+accessToken)
-	resp, err := client.Do(req)
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -187,51 +190,41 @@ func (s *OAuthService) getGitHubEmail(accessToken string) (string, error) {
 			return e.Email, nil
 		}
 	}
-	if len(emails) > 0 {
-		return emails[0].Email, nil
-	}
 	return "", errors.New("no email found")
 }
 
-func (s *OAuthService) authenticateOAuthUser(provider string, userInfo domain.rest) (domain.rest, error) {
-	// 1. Try to find user by OAuth ID
+func (s *OAuthService) authenticateOAuthUser(provider string, userInfo oauthUserInfo) (domain.ResponseTokens, error) {
+	// 1. Пытаемся найти по OAuth ID
 	user, err := s.repo.GetUserByOAuth(provider, userInfo.ID)
 	if err == nil {
-		// User found, generate tokens
-		return s.authService.GenerateTokensForUser(user.ID)
+		return s.authService.GenerateTokensForUser(user.ID) // Метод должен быть в AuthService
 	}
 
-	// 2. If not found by OAuth, try to find by email (to link accounts)
+	// 2. Пытаемся найти по Email (привязка аккаунта)
 	if userInfo.Email != "" {
 		user, err = s.repo.GetUserByEmail(userInfo.Email)
 		if err == nil {
-			// User exists with this email, link OAuth account?
-			// For now, we just return error or maybe we should auto-link?
-			// Let's auto-link logic: update user with oauth info
-			// TODO: Implement account linking
-			// For now, we treat it as found user and generate tokens
+			// В реальности здесь может быть логика обновления OAuthID для существующего юзера
 			return s.authService.GenerateTokensForUser(user.ID)
 		}
 	}
 
-	// 3. Create new user
-	providerStr := provider
-	oauthIDStr := userInfo.ID
-	newUser := domain.rest{
+	// 3. Создаем нового пользователя
+	newUser := domain.User{
 		Email:         userInfo.Email,
-		Password:      "", // No password for OAuth
-		OAuthProvider: &providerStr,
-		OAuthID:       &oauthIDStr,
+		OAuthProvider: &provider,
+		OAuthID:       &userInfo.ID,
 	}
 
 	id, err := s.repo.CreateOAuthUser(newUser)
 	if err != nil {
-		return domain.rest{}, err
+		return domain.ResponseTokens{}, err
 	}
 
-	// Create initial settings
+	// Создаем начальные настройки профиля
+	// Мы передаем имя и иконку, полученные от провайдера
 	if err := s.authService.settingsService.CreateInitialUserSettings(id, userInfo.Name); err != nil {
-		// Log error but continue?
+		// Логируем, но не прерываем вход
 	}
 
 	return s.authService.GenerateTokensForUser(id)

@@ -3,7 +3,6 @@ package service
 import (
 	"crypto/rand"
 	"crypto/sha1"
-	"database/sql"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -11,21 +10,15 @@ import (
 	"time"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
-	"github.com/ArtemChadaev/SeeThisGame/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lib/pq"
 )
 
 const (
-	//соль
-	salt = "asdagedrhftyki518sadf5as8"
-	// ключ
-	signingKey = "awsg8s#@4Sf86DS#$2dF"
-	//Время жизни accesToken
-	accessTokenTTL = time.Minute * 15
-	//Время жизни refreshToken
-	refreshTokenTTL = time.Hour * 24 * 365
-	//Время за которое refreshToken обновится
+	salt                  = "asdagedrhftyki518sadf5as8"
+	signingKey            = "awsg8s#@4Sf86DS#$2dF"
+	accessTokenTTL        = time.Minute * 15
+	refreshTokenTTL       = time.Hour * 24 * 365
 	updateRefreshTokenTTL = time.Hour * 24 * 90
 )
 
@@ -35,84 +28,86 @@ type tokenClaims struct {
 }
 
 type AuthService struct {
-	repo            repository.Autorization
-	settingsService UserSettings
+	repo            domain.AuthorizationRepository // Используем интерфейс из domain
+	settingsService domain.UserSettingsService     // Ссылка на сервис настроек через интерфейс
 }
 
-func NewAuthService(repo repository.Autorization, settingsService UserSettings) *AuthService {
+func NewAuthService(repo domain.AuthorizationRepository, settingsService domain.UserSettingsService) *AuthService {
 	return &AuthService{
 		repo:            repo,
 		settingsService: settingsService,
 	}
 }
 
+// --- Помощники (Helpers) ---
+
 func generatePasswordHash(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
-
 	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
 }
 
 func generateRefreshToken() (string, error) {
 	tokenBytes := make([]byte, 32)
-	_, err := rand.Read(tokenBytes)
-	if err != nil {
+	if _, err := rand.Read(tokenBytes); err != nil {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(tokenBytes), nil
 }
 
-func GenerateRefresh(userId int) (refresh domain.rest, err error) {
-	// TODO: Сделать user-agent точнее название и описание девайса входа
-	refreshToken, err := generateRefreshToken()
+func (s *AuthService) newRefreshToken(userId int) (domain.RefreshToken, error) {
+	token, err := generateRefreshToken()
 	if err != nil {
-		return
+		return domain.RefreshToken{}, err
 	}
-	refresh = domain.rest{
-		UserID:     userId,
-		Token:      refreshToken,
-		ExpiresAt:  time.Now().Add(refreshTokenTTL),
-		NameDevice: nil,
-		DeviceInfo: nil,
-	}
-	return
+
+	return domain.RefreshToken{
+		UserID:    userId,
+		Token:     token,
+		ExpiresAt: time.Now().Add(refreshTokenTTL),
+	}, nil
 }
 
-func (s *AuthService) CreateUser(user domain.rest) (int, error) {
+// --- Основные методы ---
+
+func (s *AuthService) CreateUser(user domain.User) (int, error) {
 	user.Password = generatePasswordHash(user.Password)
+
 	id, err := s.repo.CreateUser(user)
 	if err != nil {
+		// Проверяем ошибку на нарушение уникальности (Unique Violation) в Postgres
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-			return 0, domain.rest.ErrUserAlreadyExists
+			return 0, domain.ErrUserAlreadyExists
 		}
-		return 0, domain.rest.NewInternalServerError(err)
+		// Все остальные системные ошибки оборачиваем в InternalServerError
+		return 0, domain.NewInternalServerError(err)
 	}
-	if err := s.settingsService.CreateInitialUserSettings(id, strings.Split(user.Email, "@")[0]); err != nil {
-		return 0, domain.rest.NewInternalServerError(err)
+
+	userName := strings.Split(user.Email, "@")[0]
+	if err := s.settingsService.CreateInitialUserSettings(id, userName); err != nil {
+		return 0, domain.NewInternalServerError(err)
 	}
+
 	return id, nil
 }
 
-func (s *AuthService) GenerateTokens(email, password string) (tokens domain.rest, err error) {
+func (s *AuthService) GenerateTokens(email, password string) (domain.ResponseTokens, error) {
 	userId, err := s.repo.GetUser(email, generatePasswordHash(password))
 	if err != nil {
-		// Если пользователь не найден - это ошибка неверных учетных данных.
-		if errors.Is(err, sql.ErrNoRows) {
-			return tokens, domain.rest.ErrInvalidCredentials
-		}
-		// Иначе - внутренняя ошибка.
-		return tokens, domain.rest.NewInternalServerError(err)
+		// Если пользователь не найден в БД, возвращаем типизированную ошибку
+		return domain.ResponseTokens{}, domain.ErrInvalidCredentials
 	}
 
 	return s.createTokens(userId)
 }
 
-func (s *AuthService) GenerateTokensForUser(userId int) (tokens domain.rest, err error) {
+func (s *AuthService) GenerateTokensForUser(userId int) (domain.ResponseTokens, error) {
 	return s.createTokens(userId)
 }
 
-func (s *AuthService) createTokens(userId int) (tokens domain.rest, err error) {
+func (s *AuthService) createTokens(userId int) (domain.ResponseTokens, error) {
+	// 1. Создаем Access Token (JWT)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenTTL)),
@@ -123,40 +118,37 @@ func (s *AuthService) createTokens(userId int) (tokens domain.rest, err error) {
 
 	accessToken, err := token.SignedString([]byte(signingKey))
 	if err != nil {
-		return tokens, domain.rest.NewInternalServerError(err)
+		return domain.ResponseTokens{}, domain.NewInternalServerError(err)
 	}
 
-	refresh, err := GenerateRefresh(userId)
+	// 2. Создаем Refresh Token
+	refresh, err := s.newRefreshToken(userId)
 	if err != nil {
-		return tokens, domain.rest.NewInternalServerError(err)
+		return domain.ResponseTokens{}, err
 	}
 
 	if err = s.repo.CreateToken(refresh); err != nil {
-		return tokens, domain.rest.NewInternalServerError(err)
+		return domain.ResponseTokens{}, domain.NewInternalServerError(err)
 	}
 
-	tokens = domain.rest{
+	return domain.ResponseTokens{
 		AccessToken:  accessToken,
 		RefreshToken: refresh.Token,
-	}
-	return
+	}, nil
 }
 
-func (s *AuthService) GetAccessToken(refreshToken string) (tokens domain.rest, err error) {
-
+func (s *AuthService) GetAccessToken(refreshToken string) (domain.ResponseTokens, error) {
 	refresh, err := s.repo.GetRefreshToken(refreshToken)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return tokens, domain.rest.ErrInvalidToken
-		}
-		return tokens, domain.rest.NewInternalServerError(err)
+		return domain.ResponseTokens{}, domain.ErrInvalidToken
 	}
 
 	if time.Now().After(refresh.ExpiresAt) {
-		_ = s.repo.DeleteRefreshToken(refresh.ID) // Удаляем "мусор" из БД
-		return tokens, domain.rest.ErrInvalidToken
+		_ = s.repo.DeleteRefreshToken(refresh.ID)
+		return domain.ResponseTokens{}, domain.ErrInvalidToken
 	}
 
+	// Создаем новый Access Token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenTTL)),
@@ -167,43 +159,44 @@ func (s *AuthService) GetAccessToken(refreshToken string) (tokens domain.rest, e
 
 	accessToken, err := token.SignedString([]byte(signingKey))
 	if err != nil {
-		return tokens, domain.rest.NewInternalServerError(err)
+		return domain.ResponseTokens{}, domain.NewInternalServerError(err)
 	}
 
+	// Если Refresh Token скоро истечет, обновляем и его (Rotating Refresh Tokens)
+	currentRefreshToken := refresh.Token
 	if refresh.ExpiresAt.Before(time.Now().Add(updateRefreshTokenTTL)) {
-		newRefresh, err := GenerateRefresh(refresh.UserID)
+		newRefresh, err := s.newRefreshToken(refresh.UserID)
 		if err != nil {
-			return tokens, domain.rest.NewInternalServerError(err)
+			return domain.ResponseTokens{}, err
 		}
-		err = s.repo.UpdateToken(refreshToken, newRefresh)
-		if err != nil {
-			return tokens, domain.rest.NewInternalServerError(err)
+
+		if err := s.repo.UpdateToken(refreshToken, newRefresh); err != nil {
+			return domain.ResponseTokens{}, err
 		}
-		refresh.Token = newRefresh.Token
+		currentRefreshToken = newRefresh.Token
 	}
 
-	tokens = domain.rest{
+	return domain.ResponseTokens{
 		AccessToken:  accessToken,
-		RefreshToken: refresh.Token,
-	}
-	return
+		RefreshToken: currentRefreshToken,
+	}, nil
 }
 
 func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-
 		return []byte(signingKey), nil
 	})
-	if err != nil {
-		return 0, domain.rest.ErrInvalidToken
-	}
-	claims, ok := token.Claims.(*tokenClaims)
 
-	if !ok {
-		return 0, domain.rest.ErrInvalidToken
+	if err != nil {
+		return 0, domain.ErrInvalidToken
+	}
+
+	claims, ok := token.Claims.(*tokenClaims)
+	if !ok || !token.Valid {
+		return 0, domain.ErrInvalidToken
 	}
 
 	return claims.UserId, nil
@@ -214,16 +207,13 @@ func (s *AuthService) UnAuthorize(refreshToken string) error {
 	if err != nil {
 		return err
 	}
-	err = s.repo.DeleteRefreshToken(refresh.ID)
-
-	return err
+	return s.repo.DeleteRefreshToken(refresh.ID)
 }
 
 func (s *AuthService) UnAuthorizeAll(email, password string) error {
-	id, err := s.repo.GetUser(email, password)
+	id, err := s.repo.GetUser(email, generatePasswordHash(password))
 	if err != nil {
 		return err
 	}
-	err = s.repo.DeleteAllUserRefreshTokens(id)
-	return err
+	return s.repo.DeleteAllUserRefreshTokens(id)
 }

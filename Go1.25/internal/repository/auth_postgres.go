@@ -13,7 +13,7 @@ func NewAuthPostgres(db *sqlx.DB) *AuthRepository {
 	return &AuthRepository{db: db}
 }
 
-func (r *AuthRepository) CreateUser(user domain.rest) (int, error) {
+func (r *AuthRepository) CreateUser(user domain.User) (int, error) {
 	var id int
 	query := "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id"
 	row := r.db.QueryRow(query, user.Email, user.Password)
@@ -41,7 +41,7 @@ func (r *AuthRepository) GetUserEmailFromId(id int) (string, error) {
 	return userEmail, err
 }
 
-func (r *AuthRepository) UpdateUserPassword(user domain.rest) error {
+func (r *AuthRepository) UpdateUserPassword(user domain.User) error {
 	query := "UPDATE users SET password_hash=$1 WHERE id=$2"
 	_, err := r.db.Exec(query, user.Password, user.ID)
 	return err
@@ -57,20 +57,20 @@ func (r *AuthRepository) GetUserIdByRefreshToken(refreshToken string) (int, erro
 	return userId, err
 }
 
-func (r *AuthRepository) CreateToken(refreshToken domain.rest) error {
+func (r *AuthRepository) CreateToken(refreshToken domain.RefreshToken) error {
 	query := "INSERT INTO user_refresh_tokens (user_id, token, expires_at, name_device, device_info) VALUES ($1, $2, $3, $4, $5)"
 	_, err := r.db.Exec(query, refreshToken.UserID, refreshToken.Token, refreshToken.ExpiresAt, refreshToken.NameDevice, refreshToken.DeviceInfo)
 	return err
 }
 
-func (r *AuthRepository) GetRefreshToken(refreshToken string) (domain.rest, error) {
-	var refresh domain.rest
+func (r *AuthRepository) GetRefreshToken(refreshToken string) (domain.RefreshToken, error) {
+	var refresh domain.RefreshToken
 	query := "SELECT * FROM user_refresh_tokens WHERE token=$1"
 	err := r.db.Get(&refresh, query, refreshToken)
 	return refresh, err
 }
 
-func (r *AuthRepository) UpdateToken(oldRefreshToken string, refreshToken domain.rest) error {
+func (r *AuthRepository) UpdateToken(oldRefreshToken string, refreshToken domain.RefreshToken) error {
 	query := "UPDATE user_refresh_tokens SET token=$1, expires_at=$2, name_device=$3, device_info=$4 WHERE token=$5"
 	_, err := r.db.Exec(query, refreshToken.Token, refreshToken.ExpiresAt, refreshToken.NameDevice, refreshToken.DeviceInfo, oldRefreshToken)
 	return err
@@ -88,15 +88,15 @@ func (r *AuthRepository) DeleteAllUserRefreshTokens(userId int) error {
 	return err
 }
 
-func (r *AuthRepository) GetRefreshTokens(userId int) ([]domain.rest, error) {
-	var refresh []domain.rest
+func (r *AuthRepository) GetRefreshTokens(userId int) ([]domain.RefreshToken, error) {
+	var refresh []domain.RefreshToken
 	query := "SELECT * FROM user_refresh_tokens WHERE user_id=$1"
 	err := r.db.Select(&refresh, query, userId)
 	return refresh, err
 }
 
 // CreateOAuthUser creates a new user with OAuth credentials
-func (r *AuthRepository) CreateOAuthUser(user domain.rest) (int, error) {
+func (r *AuthRepository) CreateOAuthUser(user domain.User) (int, error) {
 	var id int
 	query := `INSERT INTO users (email, password_hash, oauth_provider, oauth_id) 
 	          VALUES ($1, $2, $3, $4) RETURNING id`
@@ -108,16 +108,16 @@ func (r *AuthRepository) CreateOAuthUser(user domain.rest) (int, error) {
 }
 
 // GetUserByOAuth finds a user by OAuth provider and OAuth ID
-func (r *AuthRepository) GetUserByOAuth(provider, oauthID string) (domain.rest, error) {
-	var user domain.rest
+func (r *AuthRepository) GetUserByOAuth(provider, oauthID string) (domain.User, error) {
+	var user domain.User
 	query := "SELECT id, email, oauth_provider, oauth_id FROM users WHERE oauth_provider=$1 AND oauth_id=$2"
 	err := r.db.Get(&user, query, provider, oauthID)
 	return user, err
 }
 
 // GetUserByEmail finds a user by email address
-func (r *AuthRepository) GetUserByEmail(email string) (domain.rest, error) {
-	var user domain.rest
+func (r *AuthRepository) GetUserByEmail(email string) (domain.User, error) {
+	var user domain.User
 	query := "SELECT id, email, oauth_provider, oauth_id FROM users WHERE email=$1"
 	err := r.db.Get(&user, query, email)
 	return user, err

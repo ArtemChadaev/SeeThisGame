@@ -6,26 +6,30 @@
 Go1.25/
 ├── cmd/
 │   └── main.go                 # Инициализация и сборка "луковицы"
-├── internal/
-│   ├── domain/                 # ЯДРО: Бизнес-объекты и интерфейсы (не зависит ни от чего)
-│   │   ├── user.go             # Структура User
-│   │   ├── errors.go           # Бизнес-ошибки
-│   │   └── interfaces.go       # Описание того, что должны уметь Repo и Service
+│   internal/
+│   ├── domain/                 # ЯДРО: Нет внешних зависимостей
+│   │   ├── auth.go             # Модели (User, Token) + Интерфейсы (AuthRepo, AuthService)
+│   │   ├── user_settings.go    # Модель (UserSettings) + Интерфейсы (SettingsRepo, SettingsService)
+│   │   └── errors.go           # Глобальные ошибки бизнеса
 │   │
-│   ├── service/                # СЛОЙ ЛОГИКИ: Реализация бизнес-правил
-│   │   └── auth.go             # Логика (зависит только от domain)
+│   ├── service/                # ЛОГИКА: Зависит ТОЛЬКО от domain
+│   │   ├── service.go          # Сборка: struct Service { domain.AuthService, ... }
+│   │   ├── auth.go             # Реализация логики авторизации
+│   │   └── user_settings.go    # Реализация логики профиля и экономики
 │   │
-│   ├── repository/             # ИНФРАСТРУКТУРА: Работа с данными (реализация интерфейсов)
-│   │   ├── postgres/
-│   │   │   └── auth.go         # Конкретный SQL для Postgres
-│   │   └── redis/
-│   │       └── session.go      # Конкретный код для Redis
+│   ├── repository/             # ИНФРАСТРУКТУРА: Зависит от domain и драйверов (SQL, Redis)
+│   │   ├── repository.go       # Сборка: struct Repository { domain.AuthRepo, ... }
+│   │   ├── postgres/           # Реализации для PostgreSQL
+│   │   │   ├── auth.go         # SQL запросы для авторизации
+│   │   │   └── user_settings.go# SQL запросы для настроек
+│   │   └── redis/              # Реализации для Redis (кэш, сессии)
+│   │       └── session.go
 │   │
-│   └── transport/              # ВХОДНЫЕ ТОЧКИ: HTTP, gRPC и т.д.
-│       └── rest/               # Бывший httpApi
-│           ├── handler.go      # Базовый обработчик
-│           ├── auth.go         # Эндпоинты авторизации
-│           └── middleware/     # Промежуточное ПО
+│   └── transport/              # ВХОД: Зависит от service и domain
+│       └── rest/
+│           ├── handler.go      # Общий роутер (NewHandler)
+│           ├── auth.go         # HTTP обработчики для /auth
+│           └── user_settings.go# HTTP обработчики для /settings
 │
 ├── tests/                      # ИНТЕГРАЦИОННЫЕ ТЕСТЫ
 │   ├── integration_test.go     # Тест: HTTP запрос -> Сервис -> БД

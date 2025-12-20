@@ -1,5 +1,10 @@
 package domain
 
+type OAuthService interface {
+	GetAuthURL(provider string) (string, error)
+	HandleCallback(provider, code string) (ResponseTokens, error)
+}
+
 // OAuthProvider represents supported OAuth providers
 type OAuthProvider string
 

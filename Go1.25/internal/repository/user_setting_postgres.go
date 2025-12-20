@@ -15,20 +15,22 @@ func NewUserSettingsPostgres(db *sqlx.DB) *UserSettingsRepository {
 	return &UserSettingsRepository{db: db}
 }
 
-func (r *UserSettingsRepository) CreateUserSettings(settings domain.rest) error {
+func (r *UserSettingsRepository) CreateUserSettings(settings domain.UserSettings) error {
+	// Используем поля .UserID и .Name из domain.UserSettings
 	query := "INSERT INTO user_settings (user_id, name) VALUES ($1, $2)"
 	_, err := r.db.Exec(query, settings.UserID, settings.Name)
 	return err
 }
 
-func (r *UserSettingsRepository) GetUserSettings(userId int) (domain.rest, error) {
-	var settings domain.rest
+func (r *UserSettingsRepository) GetUserSettings(userId int) (domain.UserSettings, error) {
+	var settings domain.UserSettings // Заменили rest на UserSettings
 	query := "SELECT * FROM user_settings WHERE user_id=$1"
 	err := r.db.Get(&settings, query, userId)
 	return settings, err
 }
 
-func (r *UserSettingsRepository) UpdateUserSettings(settings domain.rest) error {
+func (r *UserSettingsRepository) UpdateUserSettings(settings domain.UserSettings) error {
+	// Используем экспортируемые поля: .Name, .Icon, .UserID
 	query := "UPDATE user_settings SET name=$1, icon=$2 WHERE user_id=$3"
 	_, err := r.db.Exec(query, settings.Name, settings.Icon, settings.UserID)
 	return err
@@ -39,14 +41,16 @@ func (r *UserSettingsRepository) UpdateUserCoin(userId int, coin int) error {
 	_, err := r.db.Exec(query, coin, userId)
 	return err
 }
+
 func (r *UserSettingsRepository) BuyPaidSubscription(userId int, time time.Time) error {
 	query := "UPDATE user_settings SET paid_subscription=$1, date_of_paid_subscription=$2 WHERE user_id=$3"
 	_, err := r.db.Exec(query, true, time, userId)
 	return err
 }
+
 func (r *UserSettingsRepository) DeactivateExpiredSubscriptions() (int64, error) {
 	query := `UPDATE user_settings SET paid_subscription = false 
-			  WHERE paid_subscription = true AND date_of_paid_subscription < NOW()`
+            WHERE paid_subscription = true AND date_of_paid_subscription < NOW()`
 
 	result, err := r.db.Exec(query)
 	if err != nil {

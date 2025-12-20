@@ -1,14 +1,15 @@
 port: "8080"
 
+
 db:
   username: "postgres"
-  host: "localhost"
+  host: "postgres"  # Имя сервиса из docker-compose
   port: "5432"
-  database: "postgres"
+  database: "app_db" # У тебя в compose было app_db, а в конфиге postgres
   sslmode: "disable"
 
 redis:
-  addr: "localhost:5433"
+  addr: "redis:6379" # Имя сервиса и стандартный порт
   db: 0
 
 oauth:
