@@ -1,95 +1,95 @@
-# Technical Specification for "Choose Me" Game Development
+# Техническое задание на разработку игры "Выбери меня"
 
-## 1. Program Name and Application Area
+## 1. Название программы и область применения
 
-**Program Name:** "Choose Me".
-**Application Area:** Software product intended for use in the field of interactive entertainment.
-**Application Object:** Web platform used on personal computers and mobile devices of users through a web browser.
+**Наименование программы:** "Выбери меня".
+**Область применения:** Программное изделие предназначено для использования в сфере интерактивных развлечений.
+**Объект применения:** Веб-платформа, используемая на персональных компьютерах и мобильных устройствах пользователей через веб-браузер.
 
-## 2. Development Basis
+## 2. Основание для разработки
 
-**Document on which development is based:** Project concept.
-**Development Topic Name:** "Development of a life simulator game with RPG elements and procedural generation".
+**Документ, на основании которого ведется разработка:** Концепция проекта.
+**Наименование темы разработки:** «Разработка игры в жанре симулятор жизни с элементами RPG и процедурной генерацией».
 
-## 3. Development Purpose
+## 3. Назначение разработки
 
-**Functional Purpose:** Creating a game world populated by unique, procedurally generated characters controlled by AI. Providing the player with the role of observer and manager who influences the world and its inhabitants through game events and mechanics.
-**Operational Purpose:** Providing 24/7 access for users to their game world, as well as providing a personal account for managing the account and in-game purchases.
+**Функциональное назначение:** Создание игрового мира, населенного уникальными, процедурно генерируемыми персонажами, управляемыми ИИ. Предоставление игроку роли наблюдателя и управляющего, который влияет на мир и его обитателей через игровые события и механики.
+**Эксплуатационное назначение:** Обеспечение круглосуточного доступа для пользователей к их игровому миру, а также предоставление личного кабинета для управления аккаунтом и игровыми покупками.
 
-## 4. Technical Requirements for the Program
+## 4. Технические требования к программе
 
-### 4.1. Functional Characteristics Requirements
+### 4.1. Требования к функциональным характеристикам
 
-**Functions Performed for the Player:**
+**Состав выполняемых функций для Игрока:**
 
-- Registration and authorization.
-- Creating and customizing their world (choosing era, style).
-- Obtaining characters through game mechanics (gacha, events).
-- Sending characters to various locations for tasks, training, or living.
-- Interacting with the world through an event system (quests) with choice options.
-- Observing the life of characters, their interactions and development.
-- Using special items to influence character generation.
-- Purchasing in-game currency and premium status.
+- Регистрация и авторизация.
+- Создание и настройка своего мира (выбор эпохи, стиля).
+- Получение персонажей через игровые механики (гача, события).
+- Отправка персонажей в различные локации для выполнения задач, тренировок или жизни.
+- Взаимодействие с миром через систему событий (квестов) с вариантами выбора.
+- Просмотр за жизнью персонажей, их взаимодействиями и развитием.
+- Использование специальных предметов для влияния на генерацию персонажей.
+- Покупка внутриигровой валюты и премиум-статуса.
 
-**Input Data Organization:** Data entered by users (registration data, event choices), world settings.
-**Output Data Organization:** Web pages with visualization of the game world, characters, events; AI-generated images.
+**Организация входных данных:** Данные, вводимые пользователями (регистрационные данные, выборы в событиях), настройки мира.
+**Организация выходных данных:** Веб-страницы с визуализацией игрового мира, персонажей, событий; сгенерированные ИИ изображения.
 
-### 4.2. Reliability Requirements
+### 4.2. Требования к надежности
 
-- Ensuring stable website operation in 24/7 mode.
-- **Decay Mechanics:** To maintain activity, a world decay system is implemented when the player is absent for a long time (1 day, week, month, year). A "Freeze" item is provided to prevent decay.
-- Control and validation of user-entered information.
-- Automatic database backup should be performed at least once a day.
+- Обеспечение устойчивого функционирования сайта в режиме 24/7.
+- **Механика упадка:** Для поддержания активности реализована система упадка мира при долгом отсутствии игрока (1 день, неделя, месяц, год). Предусмотрен предмет "Заморозка" для предотвращения упадка.
+- Осуществление контроля и валидации вводимой пользователями информации.
+- Автоматическое резервное копирование базы данных должно производиться не реже одного раза в сутки.
 
-### 4.3. Operating Conditions
+### 4.3. Условия эксплуатации
 
-- **Client Side:** Availability of a PC or mobile device with Internet access and a modern web browser installed (Google Chrome, Mozilla Firefox, Safari, Edge).
-- **Personnel Qualifications:** Platform administration requires a specialist with system administration skills.
+- **Клиентская часть:** Наличие ПК или мобильного устройства с доступом в Интернет и установленным современным веб-браузером (Google Chrome, Mozilla Firefox, Safari, Edge).
+- **Квалификация персонала:** Для администрирования платформы требуется специалист с навыками системного администрирования.
 
-### 4.4. Technical Equipment Composition and Parameters Requirements
+### 4.4. Требования к составу и параметрам технических средств
 
-- **Server Side:** Web server (2-core processor, 4 GB RAM, 50 GB SSD).
-- **Client Side:** User devices must ensure stable web browser operation.
+- **Серверная часть:** Веб-сервер (2-ядерный процессор, 4 ГБ ОЗУ, 50 ГБ SSD).
+- **Клиентская часть:** Устройства пользователя должны обеспечивать стабильную работу веб-браузера.
 
-### 4.5. Information and Software Compatibility Requirements
+### 4.5. Требования к информационной и программной совместимости
 
-- **Server Software:** Linux OS, Nginx web server, PostgreSQL DBMS, Redis.
-- **Development Stack:** Backend – Go, Frontend – Nuxt 4.
-- **AI Integration:** ComfyUI, pollinations and others for image generation, n8n for automation and connection with AI models.
-- **Information Protection:** Traffic encryption via HTTPS protocol.
+- **Серверное ПО:** OS Linux, веб-сервер Nginx, СУБД PostgreSQL.
+- **Стек разработки:** Backend – Go, Frontend – Nuxt 4.
+- **Интеграция с ИИ:** ComfyUI для генерации изображений, n8n для автоматизации и связи с моделями ИИ.
+- **Защита информации:** Шифрование трафика по протоколу HTTPS.
 
-## 5. Technical and Economic Indicators
+## 5. Технико-экономические показатели
 
-- **Monetization:** Sale of in-game currency, premium status, and special items.
-- **Economic Advantages:** Creating a unique gaming experience through deep AI integration and procedural generation, which increases player engagement and loyalty.
+- **Монетизация:** Продажа внутриигровой валюты, премиум-статуса и специальных предметов.
+- **Экономические преимущества:** Создание уникального игрового опыта за счет глубокой интеграции ИИ и процедурной генерации, что повышает вовлеченность и лояльность игроков.
 
-## 6. Development Stages and Phases
+## 6. Стадии и этапы разработки
 
-### Stage 1: Creating Web Platform and Basic Infrastructure
+### Этап 1: Создание веб-платформы и базовой инфраструктуры
 
-1.  **Website Development:** Landing page, registration/authorization, personal account, payment system integration.
-2.  **Design and Interface:** Layout design, tutorial page creation.
-3.  **Backend Infrastructure:** Server setup on Go and PostgreSQL database.
+1.  **Разработка сайта:** Лендинг, регистрация/авторизация, личный кабинет, подключение платежной системы.
+2.  **Дизайн и интерфейс:** Проектирование макета, создание страницы-туториала.
+3.  **Бэкенд-инфраструктура:** Настройка сервера на Go и базы данных PostgreSQL.
 
-### Stage 2: Creating Prototype and Game Core
+### Этап 2: Создание прототипа и ядра игры
 
-1.  **Basic Character Generation:** Based on JSON tags with portrait generation via AI.
-2.  **World Creation:** Implementation of basic world structure and 2-3 locations.
-3.  **Main Gameplay Loop:** "Summoning" characters and sending them to locations.
+1.  **Базовая генерация персонажей:** На основе JSON-тегов с генерацией портретов через ИИ.
+2.  **Создание мира:** Реализация базовой структуры мира и 2-3 локаций.
+3.  **Основной цикл геймплея:** "Призыв" персонажей и отправка их в локации.
 
-### Stage 3: Expanding Game Mechanics
+### Этап 3: Расширение игровых механик
 
-1.  **NPC Interaction System:** Communication and relationship system.
-2.  **Leveling and Skills:** Adding character development system.
-3.  **Event System:** Creating quest editor with choices.
+1.  **Система взаимодействия NPC:** Общение и система отношений.
+2.  **Прокачка и навыки:** Добавление системы развития персонажей.
+3.  **Система событий:** Создание редактора квестов с выборами.
 
-### Stage 4: Content, Polish and Launch
+### Этап 4: Контент, полировка и запуск
 
-1.  **Content Expansion:** More locations, events, character types.
-2.  **AI Enhancement:** Improving character behavior.
-3.  **Polish:** Adding animations, interface debugging, testing and balancing.
+1.  **Расширение контента:** Больше локаций, событий, типов персонажей.
+2.  **Углубление ИИ:** Улучшение поведения персонажей.
+3.  **Полировка:** Добавление анимаций, отладка интерфейсов, тестирование и балансировка.
 
-## 7. Control and Acceptance Procedure
+## 7. Порядок контроля и приемки
 
-- **Types of Testing:** Unit, integration and acceptance testing.
-- **Work Acceptance:** Performed after verifying that the implemented functionality meets the requirements set forth in this specification.
+- **Виды испытаний:** Модульное, интеграционное и приемочное тестирование.
+- **Приемка работы:** Осуществляется после проверки соответствия реализованного функционала требованиям, изложенным в данном ТЗ.

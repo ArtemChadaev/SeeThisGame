@@ -1,20 +1,20 @@
-package handler
+package rest
 
 import (
 	"net/http"
 
-	"github.com/ArtemChadaev/SeeThisGame"
+	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) initiateOAuth(c *gin.Context) {
 	provider := c.Param("provider")
 	if provider != "google" && provider != "github" {
-		handleError(c, rest.NewInvalidRequestError(nil))
+		handleError(c, domain.NewInvalidRequestError(nil))
 		return
 	}
 
-	url, err := h.services.OAuth.GetAuthURL(provider)
+	url, err := h.services.OAuthService.GetAuthURL(provider)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -26,19 +26,20 @@ func (h *Handler) initiateOAuth(c *gin.Context) {
 func (h *Handler) oauthCallback(c *gin.Context) {
 	provider := c.Param("provider")
 	if provider != "google" && provider != "github" {
-		handleError(c, rest.NewInvalidRequestError(nil))
+		handleError(c, domain.NewInvalidRequestError(nil))
 		return
 	}
 
-	var input rest.OAuthCallbackRequest
-	if err := c.BindQuery(&input); err != nil {
-		handleError(c, rest.NewInvalidRequestError(err))
+	// Код и стейт приходят в URL (query)
+	code := c.Query("code")
+	if code == "" {
+		handleError(c, domain.NewInvalidRequestError(nil))
 		return
 	}
 
-	// TODO: Verify state parameter to prevent CSRF
+	// TODO: Проверка параметра state для защиты от CSRF
 
-	tokens, err := h.services.OAuth.HandleCallback(provider, input.Code)
+	tokens, err := h.services.OAuthService.HandleCallback(provider, code)
 	if err != nil {
 		handleError(c, err)
 		return

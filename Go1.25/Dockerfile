@@ -34,8 +34,7 @@ WORKDIR /app
 # Копируем ТОЛЬКО бинарный файл из этапа "Сборщик"
 COPY --from=builder /app/myapp .
 
-# Копируем конфиги, если они нужны (хотя в K8s их лучше монтировать как ConfigMap)
-COPY ./configs ./configs
+COPY config.yml .
 
 # Даем права нашему пользователю на рабочую директорию
 RUN chown -R appuser:appgroup /app
