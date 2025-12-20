@@ -62,13 +62,11 @@ func main() {
 	}
 
 	// 5. Инициализация слоев (Onion Architecture)
-	// Репозитории -> Сервисы -> Хендлеры
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos, redisClient)
 	handlers := rest.NewHandler(services, redisClient)
 
 	// 6. Запуск HTTP сервера
-	// Заменяем domain.rest на domain.Server
 	srv := new(domain.Server)
 
 	go func() {
