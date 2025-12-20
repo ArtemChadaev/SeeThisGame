@@ -1,3 +1,8 @@
 # Editor/IDE
 .idea/
 .vscode/
+.obsidian/
+
+
+# sql
+n8n_data/

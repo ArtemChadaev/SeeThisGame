@@ -1,0 +1,26 @@
+port: "8080"
+
+
+db:
+  username: "postgres"
+  host: "postgres"  # Имя сервиса из docker-compose
+  port: "5432"
+  database: "app_db" # У тебя в compose было app_db, а в конфиге postgres
+  sslmode: "disable"
+
+redis:
+  addr: "redis:6379" # Имя сервиса и стандартный порт
+  db: 0
+
+oauth:
+  baseURL: "http://localhost:8080"
+  google:
+    redirectURL: "http://localhost:8080/auth/oauth/google/callback"
+    scopes:
+      - "https://www.googleapis.com/auth/userinfo.email"
+      - "https://www.googleapis.com/auth/userinfo.profile"
+  github:
+    redirectURL: "http://localhost:8080/auth/oauth/github/callback"
+    scopes:
+      - "user:email"
+      - "read:user"
