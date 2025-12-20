@@ -26,8 +26,11 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 
   n8n:
     build:
@@ -44,24 +47,37 @@ services:
       - n8n_data:/home/node/.n8n
 
   postgres:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=app_db
+      - PGDATA=/var/lib/postgresql/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d app_db" ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   redis:
-    image: redis:7-alpine
+    image: valkey/valkey:9-alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - valkey_data:/data
+    healthcheck:
+      test: [ "CMD", "valkey-cli", "ping" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 2s
 
 volumes:
   n8n_data:
   postgres_data:
-  redis_data:
+  valkey_data:
