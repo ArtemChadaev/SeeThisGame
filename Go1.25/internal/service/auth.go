@@ -11,6 +11,7 @@ import (
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -22,14 +23,10 @@ const (
 	updateRefreshTokenTTL = time.Hour * 24 * 90
 )
 
-type tokenClaims struct {
-	jwt.RegisteredClaims
-	UserId int `json:"user_id"`
-}
 
 type AuthService struct {
-	repo            domain.AuthorizationRepository // Используем интерфейс из domain
-	settingsService domain.UserSettingsService     // Ссылка на сервис настроек через интерфейс
+	repo            domain.AuthorizationRepository
+	settingsService domain.UserSettingsService
 }
 
 func NewAuthService(repo domain.AuthorizationRepository, settingsService domain.UserSettingsService) *AuthService {
@@ -70,17 +67,16 @@ func (s *AuthService) newRefreshToken(userId int) (domain.RefreshToken, error) {
 
 // --- Основные методы ---
 
+// CreateUser — создание пользователя с сайта (без персонажа)
 func (s *AuthService) CreateUser(user domain.User) (int, error) {
 	user.Password = generatePasswordHash(user.Password)
 
 	id, err := s.repo.CreateUser(user)
 	if err != nil {
-		// Проверяем ошибку на нарушение уникальности (Unique Violation) в Postgres
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
 			return 0, domain.ErrUserAlreadyExists
 		}
-		// Все остальные системные ошибки оборачиваем в InternalServerError
 		return 0, domain.NewInternalServerError(err)
 	}
 
@@ -92,36 +88,40 @@ func (s *AuthService) CreateUser(user domain.User) (int, error) {
 	return id, nil
 }
 
+// GenerateTokens — логин с сайта. Выдает токены без GameUserID.
 func (s *AuthService) GenerateTokens(email, password string) (domain.ResponseTokens, error) {
 	userId, err := s.repo.GetUser(email, generatePasswordHash(password))
 	if err != nil {
-		// Если пользователь не найден в БД, возвращаем типизированную ошибку
 		return domain.ResponseTokens{}, domain.ErrInvalidCredentials
 	}
 
-	return s.createTokens(userId)
+	return s.createTokens(userId, uuid.Nil) // UUID персонажа пустой
 }
 
-func (s *AuthService) GenerateTokensForUser(userId int) (domain.ResponseTokens, error) {
-	return s.createTokens(userId)
+// GenerateGameTokens — вызывается при выборе персонажа. "Апгрейдит" токены.
+func (s *AuthService) GenerateGameTokens(userId int, gameUserId uuid.UUID) (domain.ResponseTokens, error) {
+    //TODO: можно добавить проверку, принадлежит ли gameUserId этому userId через repo
+	return s.createTokens(userId, gameUserId)
 }
 
-func (s *AuthService) createTokens(userId int) (domain.ResponseTokens, error) {
-	// 1. Создаем Access Token (JWT)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+// createTokens — универсальный приватный метод для сборки пары токенов.
+func (s *AuthService) createTokens(userId int, gameUserId uuid.UUID) (domain.ResponseTokens, error) {
+	// Используем domain.MyClaims
+	claims := &domain.MyClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		UserId: userId,
-	})
+		UserID:     userId,
+		GameUserID: gameUserId,
+	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	accessToken, err := token.SignedString([]byte(signingKey))
 	if err != nil {
 		return domain.ResponseTokens{}, domain.NewInternalServerError(err)
 	}
 
-	// 2. Создаем Refresh Token
 	refresh, err := s.newRefreshToken(userId)
 	if err != nil {
 		return domain.ResponseTokens{}, err
@@ -137,7 +137,9 @@ func (s *AuthService) createTokens(userId int) (domain.ResponseTokens, error) {
 	}, nil
 }
 
-func (s *AuthService) GetAccessToken(refreshToken string) (domain.ResponseTokens, error) {
+// GetAccessToken — обновление токенов. 
+// Принимает опциональный gameUserId, чтобы сохранить контекст игры при обновлении.
+func (s *AuthService) GetAccessToken(refreshToken string, gameUserId uuid.UUID) (domain.ResponseTokens, error) {
 	refresh, err := s.repo.GetRefreshToken(refreshToken)
 	if err != nil {
 		return domain.ResponseTokens{}, domain.ErrInvalidToken
@@ -148,22 +150,14 @@ func (s *AuthService) GetAccessToken(refreshToken string) (domain.ResponseTokens
 		return domain.ResponseTokens{}, domain.ErrInvalidToken
 	}
 
-	// Создаем новый Access Token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenTTL)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-		refresh.UserID,
-	})
-
-	accessToken, err := token.SignedString([]byte(signingKey))
+	// Создаем новый Access Token через общий метод
+	// Теперь он будет знать про gameUserId, если тот был передан
+	tokens, err := s.createTokens(refresh.UserID, gameUserId)
 	if err != nil {
-		return domain.ResponseTokens{}, domain.NewInternalServerError(err)
+		return domain.ResponseTokens{}, err
 	}
 
-	// Если Refresh Token скоро истечет, обновляем и его (Rotating Refresh Tokens)
-	currentRefreshToken := refresh.Token
+	// Если Refresh Token скоро истечет, обновляем и его
 	if refresh.ExpiresAt.Before(time.Now().Add(updateRefreshTokenTTL)) {
 		newRefresh, err := s.newRefreshToken(refresh.UserID)
 		if err != nil {
@@ -173,33 +167,31 @@ func (s *AuthService) GetAccessToken(refreshToken string) (domain.ResponseTokens
 		if err := s.repo.UpdateToken(refreshToken, newRefresh); err != nil {
 			return domain.ResponseTokens{}, err
 		}
-		currentRefreshToken = newRefresh.Token
+		tokens.RefreshToken = newRefresh.Token
+	} else {
+		// Если рефреш не обновляли, возвращаем старый
+		tokens.RefreshToken = refresh.Token
 	}
 
-	return domain.ResponseTokens{
-		AccessToken:  accessToken,
-		RefreshToken: currentRefreshToken,
-	}, nil
+	return tokens, nil
 }
 
-func (s *AuthService) ParseToken(accessToken string) (int, error) {
-	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+// ParseToken — теперь возвращает *domain.MyClaims
+func (s *AuthService) ParseToken(accessToken string) (*domain.MyClaims, error) {
+	claims := &domain.MyClaims{}
+
+	token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(signingKey), nil
 	})
 
-	if err != nil {
-		return 0, domain.ErrInvalidToken
+	if err != nil || !token.Valid {
+		return nil, domain.ErrInvalidToken
 	}
 
-	claims, ok := token.Claims.(*tokenClaims)
-	if !ok || !token.Valid {
-		return 0, domain.ErrInvalidToken
-	}
-
-	return claims.UserId, nil
+	return claims, nil
 }
 
 func (s *AuthService) UnAuthorize(refreshToken string) error {

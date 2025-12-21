@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ArtemChadaev/SeeThisGame/internal/domain"
+	"github.com/google/uuid"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,26 +23,32 @@ const (
 
 // userIdentify — проверка валидности Access токена
 func (h *Handler) userIdentify(c *gin.Context) {
-	header := c.GetHeader(authorizationHeader)
-	if header == "" {
-		handleError(c, domain.ErrInvalidToken) // Используем константу из domain
-		return
-	}
+    header := c.GetHeader(authorizationHeader)
+    if header == "" {
+        handleError(c, domain.ErrInvalidToken)
+        return
+    }
 
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		handleError(c, domain.ErrInvalidToken)
-		return
-	}
+    headerParts := strings.Split(header, " ")
+    if len(headerParts) != 2 || headerParts[0] != "Bearer" {
+        handleError(c, domain.ErrInvalidToken)
+        return
+    }
 
-	// Вызываем сервис через интерфейс
-	userId, err := h.services.AuthorizationService.ParseToken(headerParts[1])
-	if err != nil {
-		handleError(c, err)
-		return
-	}
+    // 1. Получаем полные данные из токена
+    claims, err := h.services.AuthorizationService.ParseToken(headerParts[1])
+    if err != nil {
+        handleError(c, err)
+        return
+    }
 
-	c.Set(userCtx, userId)
+    // 2. Всегда устанавливаем ID пользователя
+    c.Set("userId", claims.UserID)
+
+    // 3. Если в токене есть UUID персонажа (он не пустой) — кладем и его инчае пустой
+    if claims.GameUserID != uuid.Nil {
+        c.Set("gameUserId", claims.GameUserID)
+    }
 }
 
 // rateLimiter — ограничение частоты запросов по токену через Redis

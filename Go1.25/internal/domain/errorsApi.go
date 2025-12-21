@@ -66,6 +66,29 @@ var (
 		Code:       "user_not_found",
 		Message:    "user not found",
 	}
+
+	// --- Ошибки связанные с пользователем игры ---
+
+	// ErrCharacterNotSelected персонаж не выбран для игрового действия
+	ErrCharacterNotSelected = &AppError{
+		HTTPStatus: http.StatusForbidden,
+		Code:       "character_not_selected",
+		Message:    "you must select a character before performing this action",
+	}
+
+	// ErrCharacterLimitReached превышен лимит персонажей (5 шт)
+	ErrCharacterLimitReached = &AppError{
+		HTTPStatus: http.StatusForbidden,
+		Code:       "character_limit_reached",
+		Message:    "maximum number of characters (5) reached",
+	}
+
+    // ErrCharacterNotFound персонаж не найден в базе
+	ErrCharacterNotFound = &AppError{
+		HTTPStatus: http.StatusNotFound,
+		Code:       "character_not_found",
+		Message:    "character not found",
+	}
 )
 
 // Ошибки связанные с настройкой

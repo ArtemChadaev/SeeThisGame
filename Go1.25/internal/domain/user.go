@@ -30,6 +30,7 @@ type AuthorizationService interface {
 	ParseToken(accessToken string) (*MyClaims, error)
 	UnAuthorize(refreshToken string) error
 	UnAuthorizeAll(email, password string) error
+	GenerateGameTokens(userId int, gameUserId uuid.UUID) (ResponseTokens, error)
 }
 
 // MyClaims описывает содержимое JWT токена для аутентификации в игре.

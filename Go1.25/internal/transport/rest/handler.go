@@ -18,11 +18,10 @@ func NewHandler(services *service.Service, redis *redis.Client) *Handler {
 	}
 }
 
-// InitRoutes настраивает маршруты приложения
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
-	// Группа авторизации с ограничением по IP
+	// Группа авторизации (публичная: регистрация, вход, рефреш)
 	auth := router.Group("/auth", h.authRateLimiter)
 	{
 		auth.POST("/sign-up", h.signUp)
@@ -30,15 +29,32 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/refresh", h.updateToken)
 	}
 
-	// Группа API с проверкой токена и лимитом запросов
+	// Группа API (защищенная: требует accessToken)
 	api := router.Group("/api", h.userIdentify, h.rateLimiter)
 	{
+		// 1. Управление сессией персонажа
+		// Здесь мы получаем "игровой" токен с UUID внутри
+		api.POST("/auth/select-character", h.selectCharacter)
+
+		// 2. Системные настройки аккаунта
 		settings := api.Group("/settings")
 		{
 			settings.GET("/", h.getMySettings)
 			settings.PUT("/", h.setNameIcon)
 			settings.POST("/dayCoin", h.dayCoin)
-			// settings.POST("/subscript", h.subscribe) // Добавь хендлер, когда будет готов
+		}
+
+		// 3. Игровой процесс и персонажи
+		game := api.Group("/game")
+		{
+			// Создание и список
+			game.POST("/create", h.createCharacter)    // ШАГ 1: Создать (пустой + лимит 5)
+			game.GET("/list", h.getMyCharacters)       // Список всех персонажей юзера
+
+			// Работа с конкретным персонажем (требуют, чтобы персонаж был выбран)
+			game.GET("/profile", h.getGameProfile)     // Получить Nickname, Level, World и т.д.
+			game.PUT("/settings", h.updateGameSettings) // ШАГ 2: Установка/смена UI настроек
+			game.PUT("/world", h.updateGameWorld)       // ШАГ 3: Установка/смена Мира
 		}
 	}
 

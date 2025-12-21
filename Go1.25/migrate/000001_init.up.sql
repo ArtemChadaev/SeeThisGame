@@ -15,7 +15,7 @@ CREATE TABLE user_refresh_tokens
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     name_device VARCHAR(255),
-    device_info VARCHAR(255) -- Полезно для отладки
+    device_info VARCHAR(255)
 );
 -- Функция для обновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -40,7 +40,6 @@ CREATE TABLE user_settings
     coin                      INT DEFAULT 0,
     date_of_registration      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     paid_subscription         boolean DEFAULT FALSE,
---     Дата ОКОНЧАНИЯ её
     date_of_paid_subscription TIMESTAMPTZ,
     CONSTRAINT user_settings_pk PRIMARY KEY (user_id),
     CONSTRAINT fk_user_settings_user_id

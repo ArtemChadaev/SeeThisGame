@@ -10,7 +10,3 @@ ALTER TABLE users
 CREATE UNIQUE INDEX idx_users_oauth_provider_id 
     ON users(oauth_provider, oauth_id) 
     WHERE oauth_provider IS NOT NULL AND oauth_id IS NOT NULL;
-
--- Add comment for documentation
-COMMENT ON COLUMN users.oauth_provider IS 'OAuth provider name: google, github, or NULL for local auth';
-COMMENT ON COLUMN users.oauth_id IS 'User ID from OAuth provider';

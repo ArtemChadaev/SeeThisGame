@@ -9,6 +9,7 @@ import (
 type Repository struct {
 	domain.AuthorizationRepository
 	domain.UserSettingsRepository
+	domain.GameUserRepository
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -16,5 +17,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 		// Здесь мы инициализируем конкретные реализации (например, из postgres)
 		AuthorizationRepository: NewAuthPostgres(db),
 		UserSettingsRepository:  NewUserSettingsPostgres(db),
+		GameUserRepository:      NewGameUserPostgres(db),
 	}
 }

@@ -10,15 +10,18 @@ import (
 type Service struct {
 	domain.AuthorizationService
 	domain.UserSettingsService
+	domain.GameUserService
 }
 
 func NewService(repos *repository.Repository, redis *redis.Client) *Service {
 	// Инициализируем конкретные реализации логики
 	userSettingsService := NewUserSettingsService(repos.UserSettingsRepository, redis)
 	authService := NewAuthService(repos.AuthorizationRepository, userSettingsService)
+	gameUserService := NewGameUserService(repos.GameUserRepository)
 
 	return &Service{
 		AuthorizationService: authService,
 		UserSettingsService:  userSettingsService,
+		GameUserService:      gameUserService,
 	}
 }
