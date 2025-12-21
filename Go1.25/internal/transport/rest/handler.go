@@ -28,12 +28,6 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign-up", h.signUp)
 		auth.POST("/sign-in", h.signIn)
 		auth.POST("/refresh", h.updateToken)
-
-		oauth := auth.Group("/oauth")
-		{
-			oauth.GET("/:provider", h.initiateOAuth)
-			oauth.GET("/:provider/callback", h.oauthCallback)
-		}
 	}
 
 	// Группа API с проверкой токена и лимитом запросов

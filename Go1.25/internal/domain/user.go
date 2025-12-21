@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"time"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+)
 
 type AuthorizationRepository interface {
 	// User Management
@@ -17,26 +21,29 @@ type AuthorizationRepository interface {
 	DeleteRefreshToken(tokenId int) error
 	DeleteAllUserRefreshTokens(userId int) error
 	GetRefreshTokens(userId int) ([]RefreshToken, error)
-
-	// OAuth Management
-	CreateOAuthUser(user User) (int, error)
-	GetUserByOAuth(provider, oauthID string) (User, error)
-	GetUserByEmail(email string) (User, error)
 }
 
 type AuthorizationService interface {
 	CreateUser(user User) (int, error)
 	GenerateTokens(email, password string) (ResponseTokens, error)
-	GetAccessToken(refreshToken string) (ResponseTokens, error)
-	ParseToken(accessToken string) (int, error)
+	GetAccessToken(refreshToken string, gameUserId uuid.UUID) (ResponseTokens, error)
+	ParseToken(accessToken string) (*MyClaims, error)
 	UnAuthorize(refreshToken string) error
 	UnAuthorizeAll(email, password string) error
+}
+
+// MyClaims описывает содержимое JWT токена для аутентификации в игре.
+type MyClaims struct {
+    jwt.RegisteredClaims
+    UserID     int       `json:"user_id"`
+    GameUserID uuid.UUID `json:"game_user_id,omitempty"` // omitempty, если на сайте он не нужен
 }
 
 type ResponseTokens struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }
+
 type User struct {
 	ID            int     `json:"-" db:"id"`
 	Email         string  `json:"email" binding:"required"`
